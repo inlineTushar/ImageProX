@@ -1,0 +1,70 @@
+# Misc
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+.vscode/
+
+# Flutter/Dart/Pub
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/doc/api/
+/build/
+/coverage/
+
+# Android
+android/.gradle/
+android/local.properties
+android/key.properties
+**/*.keystore
+**/*.jks
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+ios/Flutter/.last_build_id
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# macOS
+macos/Pods/
+macos/Flutter/ephemeral/
+macos/Flutter/Flutter.framework
+macos/Flutter/Flutter.podspec
+
+# Windows
+windows/flutter/ephemeral/
+
+# Linux
+linux/flutter/ephemeral/
+
+# Optional tool folders
+.fvm/
+
+# Temp/backup
+*.bak
+*.tmp
