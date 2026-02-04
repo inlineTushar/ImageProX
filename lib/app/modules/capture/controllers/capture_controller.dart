@@ -47,6 +47,14 @@ class CaptureController extends BaseController {
       return status.isGranted || status.isLimited;
     }
 
+    if (Platform.isAndroid) {
+      final photosStatus = await Permission.photos.request();
+      if (photosStatus.isGranted) return true;
+
+      final storageStatus = await Permission.storage.request();
+      return storageStatus.isGranted;
+    }
+
     final status = await Permission.storage.request();
     return status.isGranted;
   }
