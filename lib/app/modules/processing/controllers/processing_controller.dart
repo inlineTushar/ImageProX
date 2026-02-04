@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:get/get.dart';
 
 import '/app/core/base/base_controller.dart';
 import '/app/data/services/vision_service.dart';
+import '/app/modules/processing/models/processing_result.dart';
+import '/app/routes/app_pages.dart';
 
 enum ContentType { face, document }
 
@@ -36,7 +39,10 @@ class ProcessingController extends BaseController {
     if (file == null) return;
 
     await runTask(
-      _detectContent(file),
+      _detectContent(file)
+          .timeout(const Duration(seconds: 12), onTimeout: () {
+        throw TimeoutException('Detection timed out. Please try again.');
+      }),
       onStart: () => updateStep('Detecting content...'),
       onSuccess: (type) {
         _contentType(type);
@@ -45,6 +51,16 @@ class ProcessingController extends BaseController {
         } else {
           updateStep('Document processing in progress...');
         }
+        Get.offNamed(
+          Routes.RESULT,
+          arguments: ProcessingResult(
+            imagePath: file.path,
+            contentType: type,
+          ),
+        );
+      },
+      onError: (error) {
+        updateStep('Processing failed. Please try again.');
       },
       onComplete: () => updateStep('Preparing result...'),
     );

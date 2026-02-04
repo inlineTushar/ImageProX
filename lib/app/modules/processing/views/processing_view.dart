@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '/app/core/base/base_view.dart';
+import '/app/core/model/page_state.dart';
 import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
@@ -49,16 +50,31 @@ class ProcessingView extends BaseView<ProcessingController> {
               )),
           const SizedBox(height: 16),
           const LinearProgressIndicator(color: AppColors.primary),
+          Obx(() {
+            if (controller.pageState == PageState.error) {
+              return Column(
+                children: [
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Processing failed.',
+                    style: TextStyle(color: AppColors.error),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: () => Get.offNamed(Routes.CAPTURE),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text('Try Again'),
+                  ),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          }),
           const Spacer(),
-          ElevatedButton(
-            onPressed: () => Get.offNamed(Routes.RESULT),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-            ),
-            child: const Text('View Result'),
-          ),
           const SizedBox(height: 12),
         ],
       ),
