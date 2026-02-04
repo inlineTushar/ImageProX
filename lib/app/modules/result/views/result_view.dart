@@ -6,6 +6,7 @@ import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
 import '/app/modules/result/controllers/result_controller.dart';
 import '/app/routes/app_pages.dart';
+import '/app/modules/processing/controllers/processing_controller.dart';
 
 class ResultView extends BaseView<ResultController> {
   const ResultView({super.key});
@@ -21,11 +22,23 @@ class ResultView extends BaseView<ResultController> {
 
   @override
   Widget buildBody(BuildContext context) {
+    final result = controller.result;
     return Padding(
       padding: const EdgeInsets.all(AppValues.padding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (result != null)
+            Text(
+              result.contentType == ContentType.face
+                  ? 'Face detected'
+                  : 'Document detected',
+              style: const TextStyle(
+                fontSize: 16,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          if (result != null) const SizedBox(height: 8),
           const Text(
             'Before / After',
             style: TextStyle(
