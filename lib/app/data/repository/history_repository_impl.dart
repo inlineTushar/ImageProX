@@ -10,7 +10,23 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
   @override
   List<HistoryItem> loadHistory() {
-    return _box.values.toList(growable: false);
+    final items = _box.values.toList(growable: false);
+    if (items.isEmpty) return items;
+
+    final invalidKeys = <dynamic>[];
+    for (final entry in _box.toMap().entries) {
+      final item = entry.value;
+      if (item.originalPath.isEmpty || item.processedPath.isEmpty) {
+        invalidKeys.add(entry.key);
+      }
+    }
+
+    if (invalidKeys.isNotEmpty) {
+      _box.deleteAll(invalidKeys);
+      return _box.values.toList(growable: false);
+    }
+
+    return items;
   }
 
   @override
