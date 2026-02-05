@@ -36,25 +36,34 @@ class HistoryItemAdapter extends TypeAdapter<HistoryItem> {
     return HistoryItem(
       id: fields[0] as String,
       type: fields[1] as HistoryType,
-      label: fields[2] as String,
+      title: (fields[2] as String?) ?? 'Document',
       createdAt: fields[3] as DateTime,
-      thumbnailPath: fields[4] as String?,
+      originalPath: (fields[4] as String?) ?? '',
+      processedPath: (fields[5] as String?) ?? '',
+      thumbnailPath: fields[6] as String?,
+      pdfPath: fields[7] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, HistoryItem obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.type)
       ..writeByte(2)
-      ..write(obj.label)
+      ..write(obj.title)
       ..writeByte(3)
       ..write(obj.createdAt)
       ..writeByte(4)
-      ..write(obj.thumbnailPath);
+      ..write(obj.originalPath)
+      ..writeByte(5)
+      ..write(obj.processedPath)
+      ..writeByte(6)
+      ..write(obj.thumbnailPath)
+      ..writeByte(7)
+      ..write(obj.pdfPath);
   }
 }

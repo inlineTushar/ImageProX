@@ -38,6 +38,8 @@ class ProcessingService {
       filename: '${contentType.name}_$timestamp.jpg',
     );
 
+    final title = contentType == ContentType.face ? 'Face Processed' : 'Document Scan';
+
     String? pdfPath;
     if (contentType == ContentType.document) {
       final pdfBytes = await _buildPdf(processed);
@@ -53,6 +55,7 @@ class ProcessingService {
       originalPath: imagePath,
       processedImagePath: processedFile.path,
       contentType: contentType,
+      title: title,
       pdfPath: pdfPath,
     );
   }

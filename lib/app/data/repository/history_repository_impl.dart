@@ -10,24 +10,16 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
   @override
   List<HistoryItem> loadHistory() {
-    if (_box.isEmpty) {
-      final seed = [
-        HistoryItem(
-          id: '1',
-          type: HistoryType.face,
-          label: 'Face Processed',
-          createdAt: DateTime(2026, 1, 14),
-        ),
-        HistoryItem(
-          id: '2',
-          type: HistoryType.document,
-          label: 'Document Scan',
-          createdAt: DateTime(2026, 1, 14),
-        ),
-      ];
-      _box.addAll(seed);
-    }
-
     return _box.values.toList(growable: false);
+  }
+
+  @override
+  Future<void> addHistoryItem(HistoryItem item) async {
+    await _box.add(item);
+  }
+
+  @override
+  Stream<List<HistoryItem>> watchHistory() {
+    return _box.watch().map((_) => _box.values.toList(growable: false));
   }
 }

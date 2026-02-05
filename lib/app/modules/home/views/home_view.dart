@@ -6,6 +6,8 @@ import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
 import '/app/modules/home/controllers/home_controller.dart';
 import '/app/modules/home/models/history_item.dart';
+import '/app/modules/processing/controllers/processing_controller.dart';
+import '/app/modules/processing/models/processing_result.dart';
 import '/app/routes/app_pages.dart';
 
 class HomeView extends BaseView<HomeController> {
@@ -66,7 +68,30 @@ class _HistoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Get.toNamed(Routes.HISTORY_DETAIL, arguments: item),
+      onTap: () {
+        if (item.type == HistoryType.document) {
+          Get.toNamed(
+            Routes.PDF_CREATED,
+            arguments: ProcessingResult(
+              originalPath: item.originalPath,
+              processedImagePath: item.processedPath,
+              contentType: ContentType.document,
+              title: item.title,
+              pdfPath: item.pdfPath,
+            ),
+          );
+        } else {
+          Get.toNamed(
+            Routes.RESULT,
+            arguments: ProcessingResult(
+              originalPath: item.originalPath,
+              processedImagePath: item.processedPath,
+              contentType: ContentType.face,
+              title: item.title,
+            ),
+          );
+        }
+      },
       child: Container(
         padding: const EdgeInsets.all(AppValues.padding),
         decoration: BoxDecoration(
@@ -96,17 +121,17 @@ class _HistoryTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.label,
+                    item.title,
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    _formatDate(item.createdAt),
-                    style: const TextStyle(color: AppColors.textSecondary),
-                  ),
+          Text(
+            _formatDate(item.createdAt),
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
                 ],
               ),
             ),

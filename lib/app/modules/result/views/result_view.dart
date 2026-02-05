@@ -1,12 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '/app/core/base/base_view.dart';
 import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
-import '/app/modules/result/controllers/result_controller.dart';
 import '/app/routes/app_pages.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
+import '/app/modules/result/controllers/result_controller.dart';
 
 class ResultView extends BaseView<ResultController> {
   const ResultView({super.key});
@@ -30,9 +32,7 @@ class ResultView extends BaseView<ResultController> {
         children: [
           if (result != null)
             Text(
-              result.contentType == ContentType.face
-                  ? 'Face detected'
-                  : 'Document detected',
+              result.title,
               style: const TextStyle(
                 fontSize: 16,
                 color: AppColors.textSecondary,
@@ -52,11 +52,17 @@ class ResultView extends BaseView<ResultController> {
             child: Row(
               children: [
                 Expanded(
-                  child: _ResultCard(label: 'Original'),
+                  child: _ResultCard(
+                    label: 'Original',
+                    imagePath: result?.originalPath,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _ResultCard(label: 'Processed'),
+                  child: _ResultCard(
+                    label: 'Processed',
+                    imagePath: result?.processedImagePath,
+                  ),
                 ),
               ],
             ),
@@ -78,12 +84,16 @@ class ResultView extends BaseView<ResultController> {
 }
 
 class _ResultCard extends StatelessWidget {
-  const _ResultCard({required this.label});
+  const _ResultCard({required this.label, this.imagePath});
 
   final String label;
+  final String? imagePath;
 
   @override
   Widget build(BuildContext context) {
+    final path = imagePath;
+    final hasImage = path != null && path.isNotEmpty && File(path).existsSync();
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -91,11 +101,31 @@ class _ResultCard extends StatelessWidget {
         border: Border.all(color: AppColors.divider),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.image, size: 56, color: AppColors.textSecondary),
+          Expanded(
+            child: hasImage
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(AppValues.radius),
+                    child: Image.file(
+                      File(path!),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    ),
+                  )
+                : const Center(
+                    child: Icon(
+                      Icons.image,
+                      size: 56,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+          ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child:
+                Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+          ),
         ],
       ),
     );

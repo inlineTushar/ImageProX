@@ -41,7 +41,7 @@ class HistoryDetailView extends BaseView<HistoryDetailController> {
           ),
           const SizedBox(height: 16),
           Text(
-            item?.label ?? 'Processed Item',
+            item?.title ?? 'Processed Item',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
