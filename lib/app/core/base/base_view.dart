@@ -20,6 +20,8 @@ abstract class BaseView<T extends BaseController> extends GetView<T> {
 
   Color statusBarColor() => AppColors.pageBackground;
 
+  bool showGlobalLoader() => true;
+
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -36,12 +38,13 @@ abstract class BaseView<T extends BaseController> extends GetView<T> {
             bottomNavigationBar: buildBottomNavigationBar(context),
             body: SafeArea(child: buildBody(context)),
           ),
-          Obx(() {
-            if (controller.pageState == PageState.loading) {
-              return const Loading();
-            }
-            return const SizedBox.shrink();
-          }),
+          if (showGlobalLoader())
+            Obx(() {
+              if (controller.pageState == PageState.loading) {
+                return const Loading();
+              }
+              return const SizedBox.shrink();
+            }),
           Obx(() {
             if (controller.errorMessage.isNotEmpty) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
