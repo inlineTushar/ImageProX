@@ -5,6 +5,7 @@ import '/app/core/base/base_view.dart';
 import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
 import '/app/modules/history_detail/controllers/history_detail_controller.dart';
+import '/l10n/app_localizations.dart';
 import '/app/modules/home/models/history_item.dart';
 
 class HistoryDetailView extends BaseView<HistoryDetailController> {
@@ -12,8 +13,9 @@ class HistoryDetailView extends BaseView<HistoryDetailController> {
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     return AppBar(
-      title: const Text('History Detail'),
+      title: Text(strings.historyDetailTitle),
       backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
     );
@@ -58,7 +60,7 @@ class HistoryDetailView extends BaseView<HistoryDetailController> {
             OutlinedButton.icon(
               onPressed: () {},
               icon: const Icon(Icons.picture_as_pdf),
-              label: const Text('Open PDF'),
+              label: Text(AppLocalizations.of(context)!.openPdf),
             ),
         ],
       ),

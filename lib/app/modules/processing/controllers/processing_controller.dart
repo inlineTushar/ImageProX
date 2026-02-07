@@ -11,6 +11,7 @@ import '/app/data/repository/history_repository.dart';
 import '/app/modules/home/models/history_item.dart';
 import '/app/modules/processing/models/processing_result.dart';
 import '/app/routes/app_pages.dart';
+import '/l10n/app_localizations.dart';
 
 enum ContentType { face, document }
 
@@ -37,7 +38,7 @@ class ProcessingController extends BaseController {
       _inputFile = File(arg);
       _processImage();
     } else {
-      showError('No image selected for processing.');
+      showError(AppLocalizations.of(Get.context!)!.noImageSelected);
     }
   }
 
@@ -46,18 +47,20 @@ class ProcessingController extends BaseController {
     if (file == null) return;
 
     setPageState(PageState.loading);
-    updateStep('Detecting content...');
+    updateStep(AppLocalizations.of(Get.context!)!.processingDetecting);
 
     try {
+      final timeoutMessage =
+          AppLocalizations.of(Get.context!)!.processingTimeout;
       final type = await _detectContent(file)
           .timeout(const Duration(seconds: 12), onTimeout: () {
-        throw TimeoutException('Detection timed out. Please try again.');
+        throw TimeoutException(timeoutMessage);
       });
 
       _contentType(type);
       updateStep(type == ContentType.face
-          ? 'Processing face image...'
-          : 'Processing document image...');
+          ? AppLocalizations.of(Get.context!)!.processingFace
+          : AppLocalizations.of(Get.context!)!.processingDocument);
 
       final result = await _processingService.process(
         file.path,
@@ -65,29 +68,40 @@ class ProcessingController extends BaseController {
       );
 
       setPageState(PageState.success);
-      updateStep('Preparing result...');
+      updateStep(AppLocalizations.of(Get.context!)!.processingPreparing);
+
+      final localizedTitle = type == ContentType.face
+          ? AppLocalizations.of(Get.context!)!.faceProcessed
+          : AppLocalizations.of(Get.context!)!.documentScan;
+      final resultWithTitle = ProcessingResult(
+        originalPath: result.originalPath,
+        processedImagePath: result.processedImagePath,
+        contentType: result.contentType,
+        title: localizedTitle,
+        pdfPath: result.pdfPath,
+      );
 
       await _repository.addHistoryItem(
         HistoryItem(
           id: DateTime.now().microsecondsSinceEpoch.toString(),
           type: type == ContentType.face ? HistoryType.face : HistoryType.document,
-          title: result.title,
+          title: resultWithTitle.title,
           createdAt: DateTime.now(),
-          originalPath: result.originalPath,
-          processedPath: result.processedImagePath,
-          thumbnailPath: result.processedImagePath,
-          pdfPath: result.pdfPath,
+          originalPath: resultWithTitle.originalPath,
+          processedPath: resultWithTitle.processedImagePath,
+          thumbnailPath: resultWithTitle.processedImagePath,
+          pdfPath: resultWithTitle.pdfPath,
         ),
       );
 
-      if (result.contentType == ContentType.document) {
-        Get.offNamed(Routes.PDF_CREATED, arguments: result);
+      if (resultWithTitle.contentType == ContentType.document) {
+        Get.offNamed(Routes.PDF_CREATED, arguments: resultWithTitle);
       } else {
-        Get.offNamed(Routes.RESULT, arguments: result);
+        Get.offNamed(Routes.RESULT, arguments: resultWithTitle);
       }
     } catch (error) {
       showError(error.toString());
-      updateStep('Processing failed. Please try again.');
+      updateStep(AppLocalizations.of(Get.context!)!.processingFailed);
       setPageState(PageState.error);
     }
   }

@@ -7,6 +7,7 @@ import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
 import '/app/routes/app_pages.dart';
+import '/l10n/app_localizations.dart';
 
 class ProcessingView extends BaseView<ProcessingController> {
   const ProcessingView({super.key});
@@ -16,8 +17,9 @@ class ProcessingView extends BaseView<ProcessingController> {
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     return AppBar(
-      title: const Text('Processing'),
+      title: Text(strings.processingTitle),
       backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
     );
@@ -47,10 +49,10 @@ class ProcessingView extends BaseView<ProcessingController> {
                 return Column(
                   children: [
                     const SizedBox(height: 16),
-                    const Text(
-                      'Processing failed.',
-                      style: TextStyle(color: AppColors.error),
-                    ),
+                  Text(
+                    AppLocalizations.of(context)!.processingFailed,
+                    style: const TextStyle(color: AppColors.error),
+                  ),
                     const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: () => Get.offNamed(Routes.CAPTURE),
@@ -59,7 +61,7 @@ class ProcessingView extends BaseView<ProcessingController> {
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      child: const Text('Try Again'),
+                    child: Text(AppLocalizations.of(context)!.tryAgain),
                     ),
                   ],
                 );

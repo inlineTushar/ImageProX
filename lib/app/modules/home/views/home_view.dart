@@ -9,14 +9,16 @@ import '/app/modules/home/models/history_item.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
 import '/app/modules/processing/models/processing_result.dart';
 import '/app/routes/app_pages.dart';
+import '/l10n/app_localizations.dart';
 
 class HomeView extends BaseView<HomeController> {
   const HomeView({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     return AppBar(
-      title: const Text('ImageProx'),
+      title: Text(strings.homeTitle),
       backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
     );
@@ -38,11 +40,11 @@ class HomeView extends BaseView<HomeController> {
       child: Obx(() {
         final items = controller.items;
         if (items.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              'No history yet. Capture an image to get started.',
+              AppLocalizations.of(context)!.homeEmpty,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           );
         }
@@ -110,7 +112,7 @@ class _HistoryTile extends StatelessWidget {
                     : AppColors.primaryDark,
                 borderRadius: BorderRadius.circular(AppValues.radiusSmall),
               ),
-              child: Icon(
+                child: Icon(
                 item.type == HistoryType.face ? Icons.face : Icons.picture_as_pdf,
                 color: Colors.white,
               ),
@@ -128,10 +130,10 @@ class _HistoryTile extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-          Text(
-            _formatDate(item.createdAt),
-            style: const TextStyle(color: AppColors.textSecondary),
-          ),
+                  Text(
+                    _formatDate(item.createdAt),
+                    style: const TextStyle(color: AppColors.textSecondary),
+                  ),
                 ],
               ),
             ),

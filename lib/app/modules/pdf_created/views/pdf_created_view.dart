@@ -6,14 +6,16 @@ import '/app/core/base/base_view.dart';
 import '/app/core/values/app_values.dart';
 import '/app/modules/pdf_created/controllers/pdf_created_controller.dart';
 import '/app/routes/app_pages.dart';
+import '/l10n/app_localizations.dart';
 
 class PdfCreatedView extends BaseView<PdfCreatedController> {
   const PdfCreatedView({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     return AppBar(
-      title: const Text('PDF Created'),
+      title: Text(strings.pdfCreatedTitle),
       backgroundColor: const Color(0xFF1C1B24),
       foregroundColor: Colors.white,
       elevation: 0,
@@ -23,7 +25,8 @@ class PdfCreatedView extends BaseView<PdfCreatedController> {
   @override
   Widget buildBody(BuildContext context) {
     final result = controller.result;
-    final title = result?.title ?? 'Document Title';
+    final title =
+        result?.title ?? AppLocalizations.of(context)!.documentTitle;
 
     return Container(
       color: const Color(0xFF1C1B24),
@@ -76,13 +79,14 @@ class PdfCreatedView extends BaseView<PdfCreatedController> {
             onPressed: () async {
               final path = result?.pdfPath;
               if (path == null || path.isEmpty) {
-                controller.showError('PDF is not available yet.');
+                controller.showError(
+                    AppLocalizations.of(context)!.pdfUnavailable);
                 return;
               }
               await OpenFilex.open(path);
             },
             icon: const Icon(Icons.picture_as_pdf),
-            label: const Text('Open PDF'),
+            label: Text(AppLocalizations.of(context)!.openPdf),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF5C72),
               foregroundColor: Colors.white,
@@ -99,7 +103,7 @@ class PdfCreatedView extends BaseView<PdfCreatedController> {
               foregroundColor: Colors.white,
               side: const BorderSide(color: Color(0xFF3B3A45)),
             ),
-            child: const Text('Done'),
+            child: Text(AppLocalizations.of(context)!.done),
           ),
         ],
       ),

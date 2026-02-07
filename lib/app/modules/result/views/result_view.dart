@@ -9,14 +9,16 @@ import '/app/core/values/app_values.dart';
 import '/app/routes/app_pages.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
 import '/app/modules/result/controllers/result_controller.dart';
+import '/l10n/app_localizations.dart';
 
 class ResultView extends BaseView<ResultController> {
   const ResultView({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     return AppBar(
-      title: const Text('Result'),
+      title: Text(strings.resultTitle),
       backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
     );
@@ -39,9 +41,9 @@ class ResultView extends BaseView<ResultController> {
               ),
             ),
           if (result != null) const SizedBox(height: 8),
-          const Text(
-            'Before / After',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.beforeAfter,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
@@ -53,14 +55,14 @@ class ResultView extends BaseView<ResultController> {
               children: [
                 Expanded(
                   child: _ResultCard(
-                    label: 'Original',
+                    label: AppLocalizations.of(context)!.original,
                     imagePath: result?.originalPath,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _ResultCard(
-                    label: 'Processed',
+                    label: AppLocalizations.of(context)!.processed,
                     imagePath: result?.processedImagePath,
                   ),
                 ),
@@ -75,7 +77,7 @@ class ResultView extends BaseView<ResultController> {
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
-            child: const Text('Done'),
+            child: Text(AppLocalizations.of(context)!.done),
           ),
         ],
       ),

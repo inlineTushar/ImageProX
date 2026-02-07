@@ -6,14 +6,16 @@ import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
 import '/app/modules/capture/controllers/capture_controller.dart';
 import '/app/routes/app_pages.dart';
+import '/l10n/app_localizations.dart';
 
 class CaptureView extends BaseView<CaptureController> {
   const CaptureView({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     return AppBar(
-      title: const Text('Capture Image'),
+      title: Text(strings.captureTitle),
       backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
     );
@@ -26,9 +28,9 @@ class CaptureView extends BaseView<CaptureController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'Select an image source',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.captureSourceLabel,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
@@ -37,13 +39,13 @@ class CaptureView extends BaseView<CaptureController> {
           const SizedBox(height: 16),
           _SourceButton(
             icon: Icons.photo_camera,
-            label: 'Camera',
+            label: AppLocalizations.of(context)!.camera,
             onTap: controller.selectCamera,
           ),
           const SizedBox(height: 12),
           _SourceButton(
             icon: Icons.photo_library,
-            label: 'Gallery',
+            label: AppLocalizations.of(context)!.gallery,
             onTap: controller.selectGallery,
           ),
         ],

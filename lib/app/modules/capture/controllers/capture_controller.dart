@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '/app/core/base/base_controller.dart';
 import '/app/routes/app_pages.dart';
+import '/l10n/app_localizations.dart';
 
 class CaptureController extends BaseController {
   final ImagePicker _picker = ImagePicker();
@@ -13,7 +14,7 @@ class CaptureController extends BaseController {
   Future<void> selectCamera() async {
     final granted = await _requestCameraPermission();
     if (!granted) {
-      showError('Camera permission denied.');
+      showError(AppLocalizations.of(Get.context!)!.cameraPermissionDenied);
       return;
     }
 
@@ -26,7 +27,7 @@ class CaptureController extends BaseController {
   Future<void> selectGallery() async {
     final granted = await _requestGalleryPermission();
     if (!granted) {
-      showError('Gallery permission denied.');
+      showError(AppLocalizations.of(Get.context!)!.galleryPermissionDenied);
       return;
     }
 
