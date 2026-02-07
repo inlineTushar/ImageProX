@@ -32,14 +32,6 @@ class ResultView extends BaseView<ResultController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (result != null)
-            Text(
-              result.title,
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
-            ),
           if (result != null) const SizedBox(height: 8),
           Text(
             AppLocalizations.of(context)!.beforeAfter,
