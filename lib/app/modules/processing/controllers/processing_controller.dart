@@ -20,8 +20,7 @@ class ProcessingController extends BaseController {
   final Rx<ContentType?> _contentType = Rx<ContentType?>(null);
   final VisionService _visionService = VisionService();
   final ProcessingService _processingService = ProcessingService();
-  final HistoryRepository _repository =
-      Get.find(tag: 'HistoryRepository');
+  final HistoryRepository _repository = Get.find<HistoryRepository>();
 
   File? _inputFile;
 

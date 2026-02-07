@@ -7,8 +7,7 @@ import '/app/data/repository/history_repository.dart';
 import '/app/modules/home/models/history_item.dart';
 
 class HomeController extends BaseController {
-  final HistoryRepository _repository =
-      Get.find(tag: 'HistoryRepository');
+  final HistoryRepository _repository = Get.find<HistoryRepository>();
 
   final RxList<HistoryItem> _items = <HistoryItem>[].obs;
 
