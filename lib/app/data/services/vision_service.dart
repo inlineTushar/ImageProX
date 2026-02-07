@@ -8,7 +8,7 @@ class VisionService {
     FaceDetectorOptions? faceDetectorOptions,
   }) : _faceDetector = FaceDetector(
           options: faceDetectorOptions ??
-              const FaceDetectorOptions(
+              FaceDetectorOptions(
                 enableLandmarks: true,
                 enableContours: true,
               ),

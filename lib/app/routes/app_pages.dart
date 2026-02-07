@@ -6,6 +6,8 @@ import '/app/modules/history_detail/bindings/history_detail_binding.dart';
 import '/app/modules/history_detail/views/history_detail_view.dart';
 import '/app/modules/home/bindings/home_binding.dart';
 import '/app/modules/home/views/home_view.dart';
+import '/app/modules/pdf_created/bindings/pdf_created_binding.dart';
+import '/app/modules/pdf_created/views/pdf_created_view.dart';
 import '/app/modules/processing/bindings/processing_binding.dart';
 import '/app/modules/processing/views/processing_view.dart';
 import '/app/modules/result/bindings/result_binding.dart';
@@ -43,6 +45,11 @@ class AppPages {
       name: _Paths.HISTORY_DETAIL,
       page: () => const HistoryDetailView(),
       binding: HistoryDetailBinding(),
+    ),
+    GetPage(
+      name: _Paths.PDF_CREATED,
+      page: () => const PdfCreatedView(),
+      binding: PdfCreatedBinding(),
     ),
   ];
 }

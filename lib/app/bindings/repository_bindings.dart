@@ -8,7 +8,7 @@ class RepositoryBindings extends Bindings {
   void dependencies() {
     Get.lazyPut<HistoryRepository>(
       () => HistoryRepositoryImpl(),
-      tag: HistoryRepository.toString(),
+      tag: 'HistoryRepository',
     );
   }
 }
