@@ -33,21 +33,13 @@ class ResultView extends BaseView<ResultController> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (result != null) const SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.beforeAfter,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 16),
           Expanded(
             child: Row(
               children: [
                 Expanded(
                   child: _ResultCard(
                     label: AppLocalizations.of(context)!.original,
+                    badgeText: 'Before',
                     imagePath: result?.originalPath,
                   ),
                 ),
@@ -55,6 +47,7 @@ class ResultView extends BaseView<ResultController> {
                 Expanded(
                   child: _ResultCard(
                     label: AppLocalizations.of(context)!.processed,
+                    badgeText: 'After',
                     imagePath: result?.processedImagePath,
                   ),
                 ),
@@ -78,9 +71,14 @@ class ResultView extends BaseView<ResultController> {
 }
 
 class _ResultCard extends StatelessWidget {
-  const _ResultCard({required this.label, this.imagePath});
+  const _ResultCard({
+    required this.label,
+    required this.badgeText,
+    this.imagePath,
+  });
 
   final String label;
+  final String badgeText;
   final String? imagePath;
 
   @override
@@ -97,28 +95,57 @@ class _ResultCard extends StatelessWidget {
       child: Column(
         children: [
           Expanded(
-            child: hasImage
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(AppValues.radius),
-                    child: Image.file(
-                      File(path!),
-                      fit: BoxFit.cover,
-                      width: double.infinity,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: hasImage
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(AppValues.radius),
+                          child: Image.file(
+                            File(path!),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : const Center(
+                          child: Icon(
+                            Icons.image,
+                            size: 56,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                ),
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
                     ),
-                  )
-                : const Center(
-                    child: Icon(
-                      Icons.image,
-                      size: 56,
-                      color: AppColors.textSecondary,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      badgeText,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child:
-                Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
           ),
         ],
       ),

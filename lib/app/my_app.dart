@@ -29,13 +29,29 @@ class MyApp extends StatelessWidget {
         Locale('es'),
       ],
       theme: ThemeData(
-        brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+        brightness: Brightness.dark,
+        colorScheme: const ColorScheme.dark(
+          primary: AppColors.primary,
+          secondary: AppColors.accent,
+          surface: AppColors.surface,
+          error: AppColors.error,
+          onPrimary: Colors.white,
+          onSecondary: Colors.white,
+          onSurface: AppColors.textPrimary,
+          onError: Colors.white,
+        ),
         scaffoldBackgroundColor: AppColors.pageBackground,
+        cardColor: AppColors.elevated,
+        dividerColor: AppColors.divider,
         appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.surface,
           foregroundColor: Colors.white,
           elevation: 0,
+        ),
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(color: AppColors.textSecondary),
+          bodyLarge: TextStyle(color: AppColors.textPrimary),
+          titleMedium: TextStyle(color: AppColors.textPrimary),
         ),
       ),
     );
