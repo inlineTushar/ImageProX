@@ -27,32 +27,32 @@ class ResultView extends BaseView<ResultController> {
   @override
   Widget buildBody(BuildContext context) {
     final result = controller.result;
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(AppValues.padding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         children: [
           if (result != null) const SizedBox(height: 8),
-          Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                  child: _ResultCard(
-                    label: AppLocalizations.of(context)!.original,
-                    badgeText: 'Before',
-                    imagePath: result?.originalPath,
-                  ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _ResultCard(
+                  label: AppLocalizations.of(context)!.original,
+                  badgeText: 'Before',
+                  imagePath: result?.originalPath,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _ResultCard(
-                    label: AppLocalizations.of(context)!.processed,
-                    badgeText: 'After',
-                    imagePath: result?.processedImagePath,
-                  ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _ResultCard(
+                  label: AppLocalizations.of(context)!.processed,
+                  badgeText: 'After',
+                  imagePath: result?.processedImagePath,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -94,7 +94,8 @@ class _ResultCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Expanded(
+          AspectRatio(
+            aspectRatio: 3 / 4,
             child: Stack(
               children: [
                 Positioned.fill(
@@ -103,7 +104,7 @@ class _ResultCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(AppValues.radius),
                           child: Image.file(
                             File(path!),
-                            fit: BoxFit.cover,
+                            fit: BoxFit.contain,
                           ),
                         )
                       : const Center(
