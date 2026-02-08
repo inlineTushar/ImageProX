@@ -2,8 +2,6 @@ import 'package:get/get.dart';
 
 import '/app/modules/capture/bindings/capture_binding.dart';
 import '/app/modules/capture/views/capture_view.dart';
-import '/app/modules/history_detail/bindings/history_detail_binding.dart';
-import '/app/modules/history_detail/views/history_detail_view.dart';
 import '/app/modules/home/bindings/home_binding.dart';
 import '/app/modules/home/views/home_view.dart';
 import '/app/modules/pdf_created/bindings/pdf_created_binding.dart';
@@ -40,11 +38,6 @@ class AppPages {
       name: _Paths.RESULT,
       page: () => const ResultView(),
       binding: ResultBinding(),
-    ),
-    GetPage(
-      name: _Paths.HISTORY_DETAIL,
-      page: () => const HistoryDetailView(),
-      binding: HistoryDetailBinding(),
     ),
     GetPage(
       name: _Paths.PDF_CREATED,
