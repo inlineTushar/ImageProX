@@ -12,6 +12,7 @@ import '/app/modules/home/models/history_item.dart';
 import '/app/routes/app_pages.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
 import '/app/modules/processing/views/processing_sheet.dart';
+import '/app/bindings/repository_bindings.dart';
 import '/l10n/app_localizations.dart';
 
 class HomeController extends BaseController {
@@ -90,6 +91,9 @@ class HomeController extends BaseController {
   }
 
   void _openProcessingSheet(String imagePath) {
+    if (!Get.isRegistered<HistoryRepository>()) {
+      RepositoryBindings().dependencies();
+    }
     if (Get.isRegistered<ProcessingController>()) {
       Get.delete<ProcessingController>();
     }
