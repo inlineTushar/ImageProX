@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+
 import 'package:get/get.dart';
 
 import '/app/core/base/base_view.dart';
 import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
-import '/app/modules/dialog_select_source/views/capture_sheet.dart';
+import '/app/modules/dialog_select_source/views/dialog_select_source_sheet.dart';
 import '/app/modules/home/controllers/home_controller.dart';
 import '/app/modules/home/models/history_item.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
@@ -30,7 +32,7 @@ class HomeView extends BaseView<HomeController> {
     return FloatingActionButton(
       onPressed: () {
         Get.bottomSheet(
-          CaptureSheet(
+          DialogSelectSourceSheet(
             onCameraTap: controller.onCameraSelected,
             onGalleryTap: controller.onGallerySelected,
           ),
@@ -83,7 +85,7 @@ class _HistoryTile extends StatelessWidget {
       onTap: () {
         if (item.type == HistoryType.document) {
           Get.toNamed(
-            Routes.PDF_CREATED,
+            Routes.RESULT_DOCUMENT,
             arguments: ProcessingResult(
               originalPath: item.originalPath,
               processedImagePath: item.processedPath,
@@ -94,7 +96,7 @@ class _HistoryTile extends StatelessWidget {
           );
         } else {
           Get.toNamed(
-            Routes.RESULT,
+            Routes.RESULT_FACE,
             arguments: ProcessingResult(
               originalPath: item.originalPath,
               processedImagePath: item.processedPath,
@@ -113,20 +115,7 @@ class _HistoryTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              height: 48,
-              width: 48,
-              decoration: BoxDecoration(
-                color: item.type == HistoryType.face
-                    ? AppColors.accent
-                    : AppColors.primaryDark,
-                borderRadius: BorderRadius.circular(AppValues.radiusSmall),
-              ),
-                child: Icon(
-                item.type == HistoryType.face ? Icons.face : Icons.picture_as_pdf,
-                color: Colors.white,
-              ),
-            ),
+            _HistoryThumbnail(item: item),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -156,6 +145,57 @@ class _HistoryTile extends StatelessWidget {
 
   String _formatDate(DateTime value) {
     final date = value.toLocal();
-    return '${date.month}/${date.day}/${date.year}';
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final month = months[date.month - 1];
+    return '$month ${date.day}, ${date.year}';
+  }
+}
+
+class _HistoryThumbnail extends StatelessWidget {
+  const _HistoryThumbnail({required this.item});
+
+  final HistoryItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final path = item.thumbnailPath ?? item.processedPath;
+    final hasImage = path.isNotEmpty && File(path).existsSync();
+
+    return Container(
+      height: 48,
+      width: 48,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppValues.radiusSmall),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppValues.radiusSmall),
+        child: hasImage
+            ? Image.file(
+                File(path),
+                fit: BoxFit.cover,
+              )
+            : Icon(
+                item.type == HistoryType.face
+                    ? Icons.face
+                    : Icons.picture_as_pdf,
+                color: AppColors.textSecondary,
+              ),
+      ),
+    );
   }
 }
