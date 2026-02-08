@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
-import '/app/modules/capture/bindings/capture_binding.dart';
-import '/app/modules/capture/views/capture_view.dart';
+import '/app/modules/dialog_select_source/bindings/capture_binding.dart';
+import '/app/modules/dialog_select_source/views/capture_view.dart';
 import '/app/modules/home/bindings/home_binding.dart';
 import '/app/modules/home/views/home_view.dart';
 import '/app/modules/result_document/bindings/pdf_created_binding.dart';
