@@ -4,12 +4,13 @@ import 'package:get/get.dart';
 import '/app/core/base/base_view.dart';
 import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
-import '/app/modules/dialog_select_source/controllers/capture_controller.dart';
+import '/app/modules/dialog_select_source/controllers/dialog_select_source_controller.dart';
 import '/app/routes/app_pages.dart';
 import '/l10n/app_localizations.dart';
 
-class CaptureView extends BaseView<CaptureController> {
-  const CaptureView({super.key});
+class DialogSelectSourceView
+    extends BaseView<DialogSelectSourceController> {
+  const DialogSelectSourceView({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {

@@ -109,12 +109,12 @@ class ProcessingController extends BaseController {
         if (Get.isBottomSheetOpen ?? false) {
           Get.back();
         }
-        Get.offNamed(Routes.PDF_CREATED, arguments: resultWithTitle);
+        Get.offNamed(Routes.RESULT_DOCUMENT, arguments: resultWithTitle);
       } else {
         if (Get.isBottomSheetOpen ?? false) {
           Get.back();
         }
-        Get.offNamed(Routes.RESULT, arguments: resultWithTitle);
+        Get.offNamed(Routes.RESULT_FACE, arguments: resultWithTitle);
       }
     } catch (error) {
       showError(error.toString());

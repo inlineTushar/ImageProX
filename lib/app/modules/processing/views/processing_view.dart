@@ -55,7 +55,7 @@ class ProcessingView extends BaseView<ProcessingController> {
                   ),
                     const SizedBox(height: 12),
                     ElevatedButton(
-                      onPressed: () => Get.offNamed(Routes.CAPTURE),
+                    onPressed: () => Get.offNamed(Routes.SELECT_SOURCE),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,

@@ -1,15 +1,15 @@
 import 'package:get/get.dart';
 
-import '/app/modules/dialog_select_source/bindings/capture_binding.dart';
-import '/app/modules/dialog_select_source/views/capture_view.dart';
+import '/app/modules/dialog_select_source/bindings/dialog_select_source_binding.dart';
+import '/app/modules/dialog_select_source/views/dialog_select_source_view.dart';
 import '/app/modules/home/bindings/home_binding.dart';
 import '/app/modules/home/views/home_view.dart';
-import '/app/modules/result_document/bindings/pdf_created_binding.dart';
-import '/app/modules/result_document/views/pdf_created_view.dart';
+import '/app/modules/result_document/bindings/result_document_binding.dart';
+import '/app/modules/result_document/views/result_document_view.dart';
 import '/app/modules/processing/bindings/processing_binding.dart';
 import '/app/modules/processing/views/processing_view.dart';
-import '/app/modules/result_face/bindings/result_binding.dart';
-import '/app/modules/result_face/views/result_view.dart';
+import '/app/modules/result_face/bindings/result_face_binding.dart';
+import '/app/modules/result_face/views/result_face_view.dart';
 
 part 'app_routes.dart';
 
@@ -25,9 +25,9 @@ class AppPages {
       binding: HomeBinding(),
     ),
     GetPage(
-      name: _Paths.CAPTURE,
-      page: () => const CaptureView(),
-      binding: CaptureBinding(),
+      name: _Paths.SELECT_SOURCE,
+      page: () => const DialogSelectSourceView(),
+      binding: DialogSelectSourceBinding(),
     ),
     GetPage(
       name: _Paths.PROCESSING,
@@ -35,14 +35,14 @@ class AppPages {
       binding: ProcessingBinding(),
     ),
     GetPage(
-      name: _Paths.RESULT,
-      page: () => const ResultView(),
-      binding: ResultBinding(),
+      name: _Paths.RESULT_FACE,
+      page: () => const ResultFaceView(),
+      binding: ResultFaceBinding(),
     ),
     GetPage(
-      name: _Paths.PDF_CREATED,
-      page: () => const PdfCreatedView(),
-      binding: PdfCreatedBinding(),
+      name: _Paths.RESULT_DOCUMENT,
+      page: () => const ResultDocumentView(),
+      binding: ResultDocumentBinding(),
     ),
   ];
 }

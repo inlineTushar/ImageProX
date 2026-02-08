@@ -8,11 +8,11 @@ import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
 import '/app/routes/app_pages.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
-import '/app/modules/result_face/controllers/result_controller.dart';
+import '/app/modules/result_face/controllers/result_face_controller.dart';
 import '/l10n/app_localizations.dart';
 
-class ResultView extends BaseView<ResultController> {
-  const ResultView({super.key});
+class ResultFaceView extends BaseView<ResultFaceController> {
+  const ResultFaceView({super.key});
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context) {

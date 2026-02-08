@@ -8,7 +8,7 @@ import '/app/core/base/base_controller.dart';
 import '/app/routes/app_pages.dart';
 import '/l10n/app_localizations.dart';
 
-class CaptureController extends BaseController {
+class DialogSelectSourceController extends BaseController {
   final ImagePicker _picker = ImagePicker();
 
   Future<void> selectCamera() async {

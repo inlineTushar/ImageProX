@@ -4,8 +4,8 @@ import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
 import '/l10n/app_localizations.dart';
 
-class CaptureSheet extends StatelessWidget {
-  const CaptureSheet({
+class DialogSelectSourceSheet extends StatelessWidget {
+  const DialogSelectSourceSheet({
     super.key,
     required this.onCameraTap,
     required this.onGalleryTap,
