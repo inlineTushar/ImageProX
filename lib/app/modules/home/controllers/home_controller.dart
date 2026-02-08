@@ -103,6 +103,8 @@ class HomeController extends BaseController {
     Get.bottomSheet(
       const ProcessingSheet(),
       isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black54,
     );
