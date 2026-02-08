@@ -29,6 +29,10 @@ class ProcessingController extends BaseController {
 
   void updateStep(String value) => _currentStep(value);
 
+  Future<void> retry() async {
+    _processImage();
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -39,6 +43,11 @@ class ProcessingController extends BaseController {
     } else {
       showError(AppLocalizations.of(Get.context!)!.noImageSelected);
     }
+  }
+
+  void onInitWithImage(String imagePath) {
+    _inputFile = File(imagePath);
+    _processImage();
   }
 
   Future<void> _processImage() async {
@@ -97,8 +106,14 @@ class ProcessingController extends BaseController {
       );
 
       if (resultWithTitle.contentType == ContentType.document) {
+        if (Get.isBottomSheetOpen ?? false) {
+          Get.back();
+        }
         Get.offNamed(Routes.PDF_CREATED, arguments: resultWithTitle);
       } else {
+        if (Get.isBottomSheetOpen ?? false) {
+          Get.back();
+        }
         Get.offNamed(Routes.RESULT, arguments: resultWithTitle);
       }
     } catch (error) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -9,6 +10,8 @@ import '/app/core/base/base_controller.dart';
 import '/app/data/repository/history_repository.dart';
 import '/app/modules/home/models/history_item.dart';
 import '/app/routes/app_pages.dart';
+import '/app/modules/processing/controllers/processing_controller.dart';
+import '/app/modules/processing/views/processing_sheet.dart';
 import '/l10n/app_localizations.dart';
 
 class HomeController extends BaseController {
@@ -46,7 +49,7 @@ class HomeController extends BaseController {
     if (image == null) return;
 
     Get.back();
-    Get.toNamed(Routes.PROCESSING, arguments: image.path);
+    _openProcessingSheet(image.path);
   }
 
   Future<void> onGallerySelected() async {
@@ -60,7 +63,7 @@ class HomeController extends BaseController {
     if (image == null) return;
 
     Get.back();
-    Get.toNamed(Routes.PROCESSING, arguments: image.path);
+    _openProcessingSheet(image.path);
   }
 
   Future<bool> _requestCameraPermission() async {
@@ -84,6 +87,21 @@ class HomeController extends BaseController {
 
     final status = await Permission.storage.request();
     return status.isGranted;
+  }
+
+  void _openProcessingSheet(String imagePath) {
+    if (Get.isRegistered<ProcessingController>()) {
+      Get.delete<ProcessingController>();
+    }
+    Get.put(ProcessingController(), permanent: false)
+        .onInitWithImage(imagePath);
+
+    Get.bottomSheet(
+      const ProcessingSheet(),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
+    );
   }
 
   @override
