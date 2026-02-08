@@ -51,25 +51,26 @@ class ProcessingController extends BaseController {
     try {
       final timeoutMessage =
           AppLocalizations.of(Get.context!)!.processingTimeout;
-      final type = await _detectContent(file)
+      final detection = await _detectContent(file)
           .timeout(const Duration(seconds: 12), onTimeout: () {
         throw TimeoutException(timeoutMessage);
       });
 
-      _contentType(type);
-      updateStep(type == ContentType.face
+      _contentType(detection.contentType);
+      updateStep(detection.contentType == ContentType.face
           ? AppLocalizations.of(Get.context!)!.processingFace
           : AppLocalizations.of(Get.context!)!.processingDocument);
 
       final result = await _processingService.process(
         file.path,
-        contentType: type,
+        contentType: detection.contentType,
+        faceBoxes: detection.faceBoxes,
       );
 
       setPageState(PageState.success);
       updateStep(AppLocalizations.of(Get.context!)!.processingPreparing);
 
-      final localizedTitle = type == ContentType.face
+      final localizedTitle = detection.contentType == ContentType.face
           ? AppLocalizations.of(Get.context!)!.faceProcessed
           : AppLocalizations.of(Get.context!)!.documentScan;
       final resultWithTitle = ProcessingResult(
@@ -83,7 +84,9 @@ class ProcessingController extends BaseController {
       await _repository.addHistoryItem(
         HistoryItem(
           id: DateTime.now().microsecondsSinceEpoch.toString(),
-          type: type == ContentType.face ? HistoryType.face : HistoryType.document,
+          type: detection.contentType == ContentType.face
+              ? HistoryType.face
+              : HistoryType.document,
           title: resultWithTitle.title,
           createdAt: DateTime.now(),
           originalPath: resultWithTitle.originalPath,
@@ -105,14 +108,28 @@ class ProcessingController extends BaseController {
     }
   }
 
-  Future<ContentType> _detectContent(File file) async {
+  Future<_DetectionResult> _detectContent(File file) async {
     final faces = await _visionService.detectFaces(file);
     if (faces.isNotEmpty) {
-      return ContentType.face;
+      final boxes = faces
+          .map((face) => [
+                face.boundingBox.left,
+                face.boundingBox.top,
+                face.boundingBox.right,
+                face.boundingBox.bottom,
+              ])
+          .toList(growable: false);
+      return _DetectionResult(
+        contentType: ContentType.face,
+        faceBoxes: boxes,
+      );
     }
 
-    final text = await _visionService.recognizeText(file);
-    return text.blocks.isNotEmpty ? ContentType.document : ContentType.document;
+    await _visionService.recognizeText(file);
+    return const _DetectionResult(
+      contentType: ContentType.document,
+      faceBoxes: [],
+    );
   }
 
   @override
@@ -120,4 +137,14 @@ class ProcessingController extends BaseController {
     _visionService.dispose();
     super.onClose();
   }
+}
+
+class _DetectionResult {
+  const _DetectionResult({
+    required this.contentType,
+    required this.faceBoxes,
+  });
+
+  final ContentType contentType;
+  final List<List<double>> faceBoxes;
 }

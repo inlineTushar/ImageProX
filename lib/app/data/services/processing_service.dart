@@ -19,11 +19,16 @@ class ProcessingService {
   Future<ProcessingResult> process(
     String imagePath, {
     required ContentType contentType,
+    List<List<double>>? faceBoxes,
   }) async {
-    final result = await compute(_processInIsolate, _ProcessPayload(
-      imagePath: imagePath,
-      contentType: contentType,
-    ));
+    final result = await compute(
+      _processInIsolate,
+      _ProcessPayload(
+        imagePath: imagePath,
+        contentType: contentType,
+        faceBoxes: faceBoxes ?? const [],
+      ),
+    );
 
     final now = DateTime.now();
     final timestamp =
@@ -95,10 +100,12 @@ class _ProcessPayload {
   const _ProcessPayload({
     required this.imagePath,
     required this.contentType,
+    required this.faceBoxes,
   });
 
   final String imagePath;
   final ContentType contentType;
+  final List<List<double>> faceBoxes;
 }
 
 class _ProcessResult {
@@ -117,10 +124,11 @@ _ProcessResult _processInIsolate(_ProcessPayload payload) {
     throw Exception('Unable to decode image');
   }
 
+  final base = img.bakeOrientation(decoded);
   final processed = payload.contentType == ContentType.face
-      ? img.grayscale(decoded)
+      ? _applyFaceComposite(base, payload.faceBoxes)
       : img.adjustColor(
-          decoded,
+          base,
           contrast: 1.1,
           brightness: 1.05,
           saturation: 1.05,
@@ -130,4 +138,34 @@ _ProcessResult _processInIsolate(_ProcessPayload payload) {
     img.encodeJpg(processed, quality: 90),
   );
   return _ProcessResult(processedBytes: processedBytes);
+}
+
+img.Image _applyFaceComposite(img.Image base, List<List<double>> boxes) {
+  final output = img.Image.from(base);
+  if (boxes.isEmpty) {
+    return output;
+  }
+
+  for (final box in boxes) {
+    if (box.length < 4) continue;
+    var left = box[0].floor();
+    var top = box[1].floor();
+    var right = box[2].ceil();
+    var bottom = box[3].ceil();
+
+    if (left < 0) left = 0;
+    if (top < 0) top = 0;
+    if (right > output.width) right = output.width;
+    if (bottom > output.height) bottom = output.height;
+
+    final width = right - left;
+    final height = bottom - top;
+    if (width <= 0 || height <= 0) continue;
+
+    final face = img.copyCrop(output, x: left, y: top, width: width, height: height);
+    final grayFace = img.grayscale(face);
+    img.compositeImage(output, grayFace, dstX: left, dstY: top);
+  }
+
+  return output;
 }
