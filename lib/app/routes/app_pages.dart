@@ -4,12 +4,12 @@ import '/app/modules/capture/bindings/capture_binding.dart';
 import '/app/modules/capture/views/capture_view.dart';
 import '/app/modules/home/bindings/home_binding.dart';
 import '/app/modules/home/views/home_view.dart';
-import '/app/modules/pdf_created/bindings/pdf_created_binding.dart';
-import '/app/modules/pdf_created/views/pdf_created_view.dart';
+import '/app/modules/result_document/bindings/pdf_created_binding.dart';
+import '/app/modules/result_document/views/pdf_created_view.dart';
 import '/app/modules/processing/bindings/processing_binding.dart';
 import '/app/modules/processing/views/processing_view.dart';
-import '/app/modules/result/bindings/result_binding.dart';
-import '/app/modules/result/views/result_view.dart';
+import '/app/modules/result_face/bindings/result_binding.dart';
+import '/app/modules/result_face/views/result_view.dart';
 
 part 'app_routes.dart';
 
