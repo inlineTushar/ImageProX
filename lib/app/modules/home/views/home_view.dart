@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '/app/core/base/base_view.dart';
 import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
+import '/app/modules/capture/views/capture_sheet.dart';
 import '/app/modules/home/controllers/home_controller.dart';
 import '/app/modules/home/models/history_item.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
@@ -27,7 +28,16 @@ class HomeView extends BaseView<HomeController> {
   @override
   Widget? buildFloatingActionButton(BuildContext context) {
     return FloatingActionButton(
-      onPressed: () => Get.toNamed(Routes.CAPTURE),
+      onPressed: () {
+        Get.bottomSheet(
+          CaptureSheet(
+            onCameraTap: controller.onCameraSelected,
+            onGalleryTap: controller.onGallerySelected,
+          ),
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+        );
+      },
       backgroundColor: AppColors.primary,
       child: const Icon(Icons.add_a_photo),
     );

@@ -1,10 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '/app/core/base/base_controller.dart';
 import '/app/data/repository/history_repository.dart';
 import '/app/modules/home/models/history_item.dart';
+import '/app/routes/app_pages.dart';
+import '/l10n/app_localizations.dart';
 
 class HomeController extends BaseController {
   final HistoryRepository _repository = Get.find<HistoryRepository>();
@@ -14,6 +19,7 @@ class HomeController extends BaseController {
   List<HistoryItem> get items => _items.toList(growable: false);
 
   StreamSubscription<List<HistoryItem>>? _subscription;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void onInit() {
@@ -27,6 +33,57 @@ class HomeController extends BaseController {
   void loadHistory() {
     final data = _repository.loadHistory();
     _items.assignAll(data);
+  }
+
+  Future<void> onCameraSelected() async {
+    final granted = await _requestCameraPermission();
+    if (!granted) {
+      showError(AppLocalizations.of(Get.context!)!.cameraPermissionDenied);
+      return;
+    }
+
+    final image = await _picker.pickImage(source: ImageSource.camera);
+    if (image == null) return;
+
+    Get.back();
+    Get.toNamed(Routes.PROCESSING, arguments: image.path);
+  }
+
+  Future<void> onGallerySelected() async {
+    final granted = await _requestGalleryPermission();
+    if (!granted) {
+      showError(AppLocalizations.of(Get.context!)!.galleryPermissionDenied);
+      return;
+    }
+
+    final image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+
+    Get.back();
+    Get.toNamed(Routes.PROCESSING, arguments: image.path);
+  }
+
+  Future<bool> _requestCameraPermission() async {
+    final status = await Permission.camera.request();
+    return status.isGranted;
+  }
+
+  Future<bool> _requestGalleryPermission() async {
+    if (Platform.isIOS) {
+      final status = await Permission.photos.request();
+      return status.isGranted || status.isLimited;
+    }
+
+    if (Platform.isAndroid) {
+      final photosStatus = await Permission.photos.request();
+      if (photosStatus.isGranted) return true;
+
+      final storageStatus = await Permission.storage.request();
+      return storageStatus.isGranted;
+    }
+
+    final status = await Permission.storage.request();
+    return status.isGranted;
   }
 
   @override
