@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:get/get.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 import '/app/core/base/base_controller.dart';
 import '/app/core/model/page_state.dart';
@@ -79,6 +80,7 @@ class ProcessingController extends BaseController {
         contentType: detection.contentType,
         faceBoxes: detection.faceBoxes,
         textBounds: detection.textBounds,
+        extractedText: detection.extractedText,
       );
 
       setPageState(PageState.success);
@@ -93,6 +95,7 @@ class ProcessingController extends BaseController {
         contentType: result.contentType,
         title: localizedTitle,
         pdfPath: result.pdfPath,
+        extractedText: detection.extractedText,
       );
 
       await _repository.addHistoryItem(
@@ -107,6 +110,7 @@ class ProcessingController extends BaseController {
           processedPath: resultWithTitle.processedImagePath,
           thumbnailPath: resultWithTitle.processedImagePath,
           pdfPath: resultWithTitle.pdfPath,
+          extractedText: resultWithTitle.extractedText,
         ),
       );
 
@@ -156,10 +160,12 @@ class ProcessingController extends BaseController {
             bounds.right,
             bounds.bottom,
           ];
+    final extractedText = _extractTextLines(text);
     return _DetectionResult(
       contentType: ContentType.document,
       faceBoxes: const [],
       textBounds: textBounds,
+      extractedText: extractedText.isEmpty ? null : extractedText,
     );
   }
 
@@ -194,10 +200,12 @@ class ProcessingController extends BaseController {
             bounds.right,
             bounds.bottom,
           ];
+    final extractedText = _extractTextLines(text);
     return _DetectionResult(
       contentType: ContentType.document,
       faceBoxes: const [],
       textBounds: textBounds,
+      extractedText: extractedText.isEmpty ? null : extractedText,
     );
   }
 
@@ -206,6 +214,34 @@ class ProcessingController extends BaseController {
     _visionService.dispose();
     super.onClose();
   }
+
+  String _extractTextLines(RecognizedText text) {
+    if (text.blocks.isEmpty) return '';
+
+    final lines = <String>[];
+    for (final block in text.blocks) {
+      if (block.lines.isEmpty) {
+        final value = block.text.trim();
+        if (value.isNotEmpty) {
+          lines.add(value);
+        }
+        continue;
+      }
+      for (final line in block.lines) {
+        final value = line.text.trim();
+        if (value.isNotEmpty) {
+          lines.add(value);
+        }
+      }
+    }
+
+    if (lines.isEmpty) {
+      final fallback = text.text.trim();
+      return fallback;
+    }
+
+    return lines.join('\n').trim();
+  }
 }
 
 class _DetectionResult {
@@ -213,9 +249,11 @@ class _DetectionResult {
     required this.contentType,
     required this.faceBoxes,
     required this.textBounds,
+    this.extractedText,
   });
 
   final ContentType contentType;
   final List<List<double>> faceBoxes;
   final List<double> textBounds;
+  final String? extractedText;
 }

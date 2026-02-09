@@ -7,6 +7,7 @@ class ProcessingResult {
     required this.contentType,
     required this.title,
     this.pdfPath,
+    this.extractedText,
   });
 
   final String originalPath;
@@ -14,4 +15,5 @@ class ProcessingResult {
   final ContentType contentType;
   final String title;
   final String? pdfPath;
+  final String? extractedText;
 }

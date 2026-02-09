@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:pdf/pdf.dart';
+import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '/app/data/services/storage_service.dart';
@@ -22,6 +23,7 @@ class ProcessingService {
     List<List<double>>? faceBoxes,
     List<double>? textBounds,
     String? originalPathOverride,
+    String? extractedText,
   }) async {
     final result = await compute(
       _processInIsolate,
@@ -47,7 +49,16 @@ class ProcessingService {
 
     String? pdfPath;
     if (contentType == ContentType.document) {
-      final pdfBytes = await _buildPdf(result.processedBytes);
+      List<int> pdfBytes;
+      if (extractedText != null && extractedText.trim().isNotEmpty) {
+        try {
+          pdfBytes = await _buildPdfFromText(extractedText);
+        } catch (_) {
+          pdfBytes = await _buildPdf(result.processedBytes);
+        }
+      } else {
+        pdfBytes = await _buildPdf(result.processedBytes);
+      }
       final pdfFile = await _storageService.saveBytes(
         pdfBytes,
         type: StorageType.pdf,
@@ -90,6 +101,30 @@ class ProcessingService {
             child: pw.Image(pdfImage, fit: pw.BoxFit.contain),
           );
         },
+      ),
+    );
+
+    return pdf.save();
+  }
+
+  Future<List<int>> _buildPdfFromText(String text) async {
+    final pdf = pw.Document();
+    final fontData =
+        await rootBundle.load('assets/fonts/NotoSans-Regular.ttf');
+    final font = pw.Font.ttf(fontData);
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) => [
+          pw.Text(
+            text,
+            style: pw.TextStyle(
+              font: font,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
 

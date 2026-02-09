@@ -24,6 +24,7 @@ class CameraScanController extends BaseController {
   int _frameCount = 0;
   static const double _scanWidthFactor = 0.75;
   static const double _scanHeightFactor = 0.45;
+  static const double _scanOverlapThreshold = 0.4;
 
   bool get isReady => _isReady.value;
   CameraController? get controller => _controller;
@@ -220,12 +221,23 @@ class CameraScanController extends BaseController {
   }
 
   bool _isInScanWindow(Rect box, Rect window) {
-    return window.overlaps(box);
+    if (!window.overlaps(box)) return false;
+    final intersection = window.intersect(box);
+    if (intersection.isEmpty) return false;
+    final boxArea = box.width * box.height;
+    if (boxArea <= 0) return false;
+    final overlapRatio = (intersection.width * intersection.height) / boxArea;
+    return overlapRatio >= _scanOverlapThreshold;
   }
 
   @override
   void onClose() {
-    _controller?.stopImageStream();
+    final controller = _controller;
+    if (controller != null && controller.value.isStreamingImages) {
+      try {
+        controller.stopImageStream();
+      } catch (_) {}
+    }
     _controller?.dispose();
     _faceDetector.close();
     _textRecognizer.close();

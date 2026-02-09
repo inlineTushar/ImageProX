@@ -13,6 +13,7 @@ class HistoryItem {
     required this.processedPath,
     this.thumbnailPath,
     this.pdfPath,
+    this.extractedText,
   });
 
   final String id;
@@ -23,4 +24,5 @@ class HistoryItem {
   final String processedPath;
   final String? thumbnailPath;
   final String? pdfPath;
+  final String? extractedText;
 }
