@@ -20,6 +20,8 @@ class ProcessingService {
     String imagePath, {
     required ContentType contentType,
     List<List<double>>? faceBoxes,
+    List<double>? textBounds,
+    String? originalPathOverride,
   }) async {
     final result = await compute(
       _processInIsolate,
@@ -27,6 +29,7 @@ class ProcessingService {
         imagePath: imagePath,
         contentType: contentType,
         faceBoxes: faceBoxes ?? const [],
+        textBounds: textBounds ?? const [],
       ),
     );
 
@@ -54,7 +57,7 @@ class ProcessingService {
     }
 
     return ProcessingResult(
-      originalPath: imagePath,
+      originalPath: originalPathOverride ?? imagePath,
       processedImagePath: processedFile.path,
       contentType: contentType,
       title: contentType.name,
@@ -101,11 +104,13 @@ class _ProcessPayload {
     required this.imagePath,
     required this.contentType,
     required this.faceBoxes,
+    required this.textBounds,
   });
 
   final String imagePath;
   final ContentType contentType;
   final List<List<double>> faceBoxes;
+  final List<double> textBounds;
 }
 
 class _ProcessResult {
@@ -127,12 +132,7 @@ _ProcessResult _processInIsolate(_ProcessPayload payload) {
   final base = img.bakeOrientation(decoded);
   final processed = payload.contentType == ContentType.face
       ? _applyFaceComposite(base, payload.faceBoxes)
-      : img.adjustColor(
-          base,
-          contrast: 1.1,
-          brightness: 1.05,
-          saturation: 1.05,
-        );
+      : _applyDocumentCropAndEnhance(base, payload.textBounds);
 
   final processedBytes = Uint8List.fromList(
     img.encodeJpg(processed, quality: 90),
@@ -168,4 +168,38 @@ img.Image _applyFaceComposite(img.Image base, List<List<double>> boxes) {
   }
 
   return output;
+}
+
+img.Image _applyDocumentCropAndEnhance(img.Image base, List<double> bounds) {
+  var output = img.Image.from(base);
+  if (bounds.length >= 4) {
+    var left = bounds[0].floor();
+    var top = bounds[1].floor();
+    var right = bounds[2].ceil();
+    var bottom = bounds[3].ceil();
+
+    if (left < 0) left = 0;
+    if (top < 0) top = 0;
+    if (right > output.width) right = output.width;
+    if (bottom > output.height) bottom = output.height;
+
+    final width = right - left;
+    final height = bottom - top;
+    if (width > 0 && height > 0) {
+      output = img.copyCrop(
+        output,
+        x: left,
+        y: top,
+        width: width,
+        height: height,
+      );
+    }
+  }
+
+  return img.adjustColor(
+    output,
+    contrast: 1.1,
+    brightness: 1.05,
+    saturation: 1.05,
+  );
 }

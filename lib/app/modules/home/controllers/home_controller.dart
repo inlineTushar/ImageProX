@@ -46,11 +46,18 @@ class HomeController extends BaseController {
       return;
     }
 
-    final image = await _picker.pickImage(source: ImageSource.camera);
-    if (image == null) return;
-
     Get.back();
-    _openProcessingSheet(image.path);
+    final result = await Get.toNamed(Routes.CAMERA_SCAN);
+    if (result is! Map) return;
+    final imagePath = result['path'] as String?;
+    final type = result['type'] as String?;
+    if (imagePath == null || imagePath.isEmpty) return;
+    final forcedType = type == 'face'
+        ? ContentType.face
+        : type == 'document'
+            ? ContentType.document
+            : null;
+    _openProcessingSheet(imagePath, forcedType: forcedType);
   }
 
   Future<void> onGallerySelected() async {
@@ -90,7 +97,7 @@ class HomeController extends BaseController {
     return status.isGranted;
   }
 
-  void _openProcessingSheet(String imagePath) {
+  void _openProcessingSheet(String imagePath, {ContentType? forcedType}) {
     if (!Get.isRegistered<HistoryRepository>()) {
       RepositoryBindings().dependencies();
     }
@@ -98,7 +105,7 @@ class HomeController extends BaseController {
       Get.delete<ProcessingController>();
     }
     Get.put(ProcessingController(), permanent: false)
-        .onInitWithImage(imagePath);
+        .onInitWithImage(imagePath, forcedType: forcedType);
 
     Get.bottomSheet(
       const ProcessingSheet(),

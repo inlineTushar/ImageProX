@@ -23,6 +23,7 @@ class ProcessingController extends BaseController {
   final HistoryRepository _repository = Get.find<HistoryRepository>();
 
   File? _inputFile;
+  ContentType? _forcedType;
 
   String get currentStep => _currentStep.value;
   ContentType? get contentType => _contentType.value;
@@ -45,8 +46,9 @@ class ProcessingController extends BaseController {
     }
   }
 
-  void onInitWithImage(String imagePath) {
+  void onInitWithImage(String imagePath, {ContentType? forcedType}) {
     _inputFile = File(imagePath);
+    _forcedType = forcedType;
     _processImage();
   }
 
@@ -60,10 +62,12 @@ class ProcessingController extends BaseController {
     try {
       final timeoutMessage =
           AppLocalizations.of(Get.context!)!.processingTimeout;
-      final detection = await _detectContent(file)
-          .timeout(const Duration(seconds: 12), onTimeout: () {
-        throw TimeoutException(timeoutMessage);
-      });
+      final detection = _forcedType == null
+          ? await _detectContent(file)
+              .timeout(const Duration(seconds: 12), onTimeout: () {
+              throw TimeoutException(timeoutMessage);
+            })
+          : await _detectForType(file, _forcedType!);
 
       _contentType(detection.contentType);
       updateStep(detection.contentType == ContentType.face
@@ -74,6 +78,7 @@ class ProcessingController extends BaseController {
         file.path,
         contentType: detection.contentType,
         faceBoxes: detection.faceBoxes,
+        textBounds: detection.textBounds,
       );
 
       setPageState(PageState.success);
@@ -137,13 +142,62 @@ class ProcessingController extends BaseController {
       return _DetectionResult(
         contentType: ContentType.face,
         faceBoxes: boxes,
+        textBounds: const [],
       );
     }
 
-    await _visionService.recognizeText(file);
-    return const _DetectionResult(
+    final text = await _visionService.recognizeText(file);
+    final bounds = _visionService.computeTextBounds(text);
+    final textBounds = bounds == null
+        ? const <double>[]
+        : [
+            bounds.left,
+            bounds.top,
+            bounds.right,
+            bounds.bottom,
+          ];
+    return _DetectionResult(
       contentType: ContentType.document,
-      faceBoxes: [],
+      faceBoxes: const [],
+      textBounds: textBounds,
+    );
+  }
+
+  Future<_DetectionResult> _detectForType(
+    File file,
+    ContentType type,
+  ) async {
+    if (type == ContentType.face) {
+      final faces = await _visionService.detectFaces(file);
+      final boxes = faces
+          .map((face) => [
+                face.boundingBox.left,
+                face.boundingBox.top,
+                face.boundingBox.right,
+                face.boundingBox.bottom,
+              ])
+          .toList(growable: false);
+      return _DetectionResult(
+        contentType: ContentType.face,
+        faceBoxes: boxes,
+        textBounds: const [],
+      );
+    }
+
+    final text = await _visionService.recognizeText(file);
+    final bounds = _visionService.computeTextBounds(text);
+    final textBounds = bounds == null
+        ? const <double>[]
+        : [
+            bounds.left,
+            bounds.top,
+            bounds.right,
+            bounds.bottom,
+          ];
+    return _DetectionResult(
+      contentType: ContentType.document,
+      faceBoxes: const [],
+      textBounds: textBounds,
     );
   }
 
@@ -158,8 +212,10 @@ class _DetectionResult {
   const _DetectionResult({
     required this.contentType,
     required this.faceBoxes,
+    required this.textBounds,
   });
 
   final ContentType contentType;
   final List<List<double>> faceBoxes;
+  final List<double> textBounds;
 }
