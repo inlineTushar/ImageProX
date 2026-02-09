@@ -52,11 +52,18 @@ class ProcessingService {
       List<int> pdfBytes;
       if (extractedText != null && extractedText.trim().isNotEmpty) {
         try {
+          debugPrint(
+            'PDF from text length=${extractedText.trim().length}',
+          );
           pdfBytes = await _buildPdfFromText(extractedText);
-        } catch (_) {
+        } catch (e, st) {
+          debugPrint('PDF text generation failed: $e');
+          debugPrint('$st');
+          debugPrint('Falling back to image PDF.');
           pdfBytes = await _buildPdf(result.processedBytes);
         }
       } else {
+        debugPrint('PDF text empty, falling back to image.');
         pdfBytes = await _buildPdf(result.processedBytes);
       }
       final pdfFile = await _storageService.saveBytes(
@@ -117,8 +124,8 @@ class ProcessingService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         build: (context) => [
-          pw.Text(
-            text,
+          pw.Paragraph(
+            text: text,
             style: pw.TextStyle(
               font: font,
               fontSize: 12,

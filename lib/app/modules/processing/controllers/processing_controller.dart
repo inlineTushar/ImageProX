@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:get/get.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:flutter/foundation.dart';
 
 import '/app/core/base/base_controller.dart';
 import '/app/core/model/page_state.dart';
@@ -150,7 +151,7 @@ class ProcessingController extends BaseController {
       );
     }
 
-    final text = await _visionService.recognizeText(file);
+    final text = await _recognizeTextWithFallback(file);
     final bounds = _visionService.computeTextBounds(text);
     final textBounds = bounds == null
         ? const <double>[]
@@ -190,7 +191,7 @@ class ProcessingController extends BaseController {
       );
     }
 
-    final text = await _visionService.recognizeText(file);
+    final text = await _recognizeTextWithFallback(file);
     final bounds = _visionService.computeTextBounds(text);
     final textBounds = bounds == null
         ? const <double>[]
@@ -213,6 +214,23 @@ class ProcessingController extends BaseController {
   void onClose() {
     _visionService.dispose();
     super.onClose();
+  }
+
+  Future<RecognizedText> _recognizeTextWithFallback(File file) async {
+    final text = await _visionService.recognizeText(file);
+    final extracted = _extractTextLines(text);
+    debugPrint(
+      'OCR primary blocks=${text.blocks.length} extractedLen=${extracted.length}',
+    );
+    if (extracted.isNotEmpty) {
+      return text;
+    }
+    final enhanced = await _visionService.recognizeTextEnhanced(file);
+    final enhancedExtracted = _extractTextLines(enhanced);
+    debugPrint(
+      'OCR enhanced blocks=${enhanced.blocks.length} extractedLen=${enhancedExtracted.length}',
+    );
+    return enhanced;
   }
 
   String _extractTextLines(RecognizedText text) {
