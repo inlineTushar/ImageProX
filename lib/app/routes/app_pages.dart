@@ -8,8 +8,6 @@ import '/app/modules/camera_scan/bindings/camera_scan_binding.dart';
 import '/app/modules/camera_scan/views/camera_scan_view.dart';
 import '/app/modules/result_document/bindings/result_document_binding.dart';
 import '/app/modules/result_document/views/result_document_view.dart';
-import '/app/modules/processing/bindings/processing_binding.dart';
-import '/app/modules/processing/views/processing_view.dart';
 import '/app/modules/result_face/bindings/result_face_binding.dart';
 import '/app/modules/result_face/views/result_face_view.dart';
 
@@ -35,11 +33,6 @@ class AppPages {
       name: _Paths.CAMERA_SCAN,
       page: () => const CameraScanView(),
       binding: CameraScanBinding(),
-    ),
-    GetPage(
-      name: _Paths.PROCESSING,
-      page: () => const ProcessingView(),
-      binding: ProcessingBinding(),
     ),
     GetPage(
       name: _Paths.RESULT_FACE,
