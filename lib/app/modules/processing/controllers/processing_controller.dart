@@ -8,6 +8,7 @@ import '/app/data/models/content_type.dart';
 import '/app/domain/entities/processed_result.dart';
 import '/app/domain/usecases/process_image_use_case.dart';
 import '/l10n/app_localizations.dart';
+import '/app/domain/failures/failure.dart';
 
 class ProcessingController extends BaseController {
   ProcessingController({
@@ -92,7 +93,11 @@ class ProcessingController extends BaseController {
       updateStep(AppLocalizations.of(Get.context!)!.processingPreparing);
       _result(result);
     } catch (error) {
-      showError(error.toString());
+      if (error is Failure) {
+        showError(error.message);
+      } else {
+        showError(error.toString());
+      }
       updateStep(AppLocalizations.of(Get.context!)!.processingFailed);
       setPageState(PageState.error);
     }

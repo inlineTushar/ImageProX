@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
 
 import '/app/data/local/hive/history_adapters.dart';
-import '/app/data/repository/history_repository.dart';
+import '/app/domain/repositories/history_repository.dart';
 import '/app/data/models/history_item.dart';
 
 class HistoryRepositoryImpl implements HistoryRepository {

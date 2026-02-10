@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import '/app/data/models/content_type.dart';
 import '/app/data/mappers/history_mapper.dart';
-import '/app/data/repository/history_repository.dart';
+import '/app/domain/repositories/history_repository.dart';
 import '/app/data/services/processing_workflow_service.dart';
 import '/app/data/mappers/processing_result_mapper.dart';
 import '/app/data/models/processing_result.dart';
@@ -13,6 +13,7 @@ import '/app/domain/services/pdf_service.dart';
 import '/app/domain/services/storage_service.dart';
 import '/app/domain/entities/processed_result.dart';
 import '/app/domain/entities/history_entry.dart';
+import '/app/domain/failures/failure.dart';
 
 class ProcessImageUseCase {
   ProcessImageUseCase({
@@ -51,33 +52,39 @@ class ProcessImageUseCase {
     void Function(ContentType type)? onDetected,
   }) async {
     final file = File(imagePath);
-    final detection = await _workflowService.detectContent(
-      file,
-      forcedType: forcedType,
-      scanWidthFactor: scanWidthFactor,
-      scanHeightFactor: scanHeightFactor,
-    );
+    final detection = await _workflowService
+        .detectContent(
+          file,
+          forcedType: forcedType,
+          scanWidthFactor: scanWidthFactor,
+          scanHeightFactor: scanHeightFactor,
+        )
+        .catchError((e) => throw ProcessingFailure(e.toString()));
 
     onDetected?.call(detection.contentType);
 
-    final processedBytes = await _imageProcessingService.process(
-      file.path,
-      contentType: detection.contentType,
-      faceBoxes: detection.faceBoxes,
-      textBounds: detection.textBounds,
-    );
+    final processedBytes = await _imageProcessingService
+        .process(
+          file.path,
+          contentType: detection.contentType,
+          faceBoxes: detection.faceBoxes,
+          textBounds: detection.textBounds,
+        )
+        .catchError((e) => throw ProcessingFailure(e.toString()));
 
     final now = DateTime.now();
     final timestamp =
         '${now.year}${_two(now.month)}${_two(now.day)}_${_two(now.hour)}${_two(now.minute)}${_two(now.second)}';
 
-    final processedFile = await _storageService.saveBytes(
-      processedBytes,
-      type: detection.contentType == ContentType.face
-          ? StorageType.face
-          : StorageType.document,
-      filename: '${detection.contentType.name}_$timestamp.jpg',
-    );
+    final processedFile = await _storageService
+        .saveBytes(
+          processedBytes,
+          type: detection.contentType == ContentType.face
+              ? StorageType.face
+              : StorageType.document,
+          filename: '${detection.contentType.name}_$timestamp.jpg',
+        )
+        .catchError((e) => throw StorageFailure(e.toString()));
 
     String? pdfPath;
     if (detection.contentType == ContentType.document) {
@@ -88,17 +95,23 @@ class ProcessImageUseCase {
           pdfBytes = await _pdfService.buildFromText(
             detection.extractedText!,
           );
-        } catch (_) {
-          pdfBytes = await _pdfService.buildFromImage(processedBytes);
+        } catch (e) {
+          throw OcrFailure(e.toString());
         }
       } else {
-        pdfBytes = await _pdfService.buildFromImage(processedBytes);
+        try {
+          pdfBytes = await _pdfService.buildFromImage(processedBytes);
+        } catch (e) {
+          throw ProcessingFailure(e.toString());
+        }
       }
-      final pdfFile = await _storageService.saveBytes(
-        Uint8List.fromList(pdfBytes),
-        type: StorageType.pdf,
-        filename: 'document_$timestamp.pdf',
-      );
+      final pdfFile = await _storageService
+          .saveBytes(
+            Uint8List.fromList(pdfBytes),
+            type: StorageType.pdf,
+            filename: 'document_$timestamp.pdf',
+          )
+          .catchError((e) => throw StorageFailure(e.toString()));
       pdfPath = pdfFile.path;
     }
 

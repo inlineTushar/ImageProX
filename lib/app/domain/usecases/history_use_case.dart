@@ -1,5 +1,5 @@
 import '/app/data/mappers/history_mapper.dart';
-import '/app/data/repository/history_repository.dart';
+import '/app/domain/repositories/history_repository.dart';
 import '/app/domain/entities/history_entry.dart';
 
 class HistoryUseCase {

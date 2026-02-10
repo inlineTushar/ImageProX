@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 
 import '/app/bindings/repository_bindings.dart';
-import '/app/data/repository/history_repository.dart';
+import '/app/domain/repositories/history_repository.dart';
 import '/app/data/services/image_preprocessor.dart';
 import '/app/data/services/processing_workflow_service.dart';
 import '/app/data/services/vision_service.dart';

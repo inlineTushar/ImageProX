@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '/app/data/repository/history_repository.dart';
+import '/app/domain/repositories/history_repository.dart';
 import '/app/data/repository/history_repository_impl.dart';
 
 class RepositoryBindings extends Bindings {
