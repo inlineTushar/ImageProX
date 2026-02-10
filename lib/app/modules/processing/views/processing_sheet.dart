@@ -5,10 +5,19 @@ import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
 import '/app/core/model/page_state.dart';
+import '/app/data/models/content_type.dart';
+import '/app/routes/app_pages.dart';
 import '/l10n/app_localizations.dart';
 
-class ProcessingSheet extends StatelessWidget {
+class ProcessingSheet extends StatefulWidget {
   const ProcessingSheet({super.key});
+
+  @override
+  State<ProcessingSheet> createState() => _ProcessingSheetState();
+}
+
+class _ProcessingSheetState extends State<ProcessingSheet> {
+  bool _didNavigate = false;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +55,27 @@ class ProcessingSheet extends StatelessWidget {
             const CircularProgressIndicator(color: AppColors.primary),
             Obx(() {
               final controller = Get.find<ProcessingController>();
+              final result = controller.result;
+              if (result != null && !_didNavigate) {
+                _didNavigate = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (Get.isBottomSheetOpen ?? false) {
+                    Get.back();
+                  }
+                  if (result.contentType == ContentType.document) {
+                    Get.offNamed(
+                      Routes.RESULT_DOCUMENT,
+                      arguments: result,
+                    );
+                  } else {
+                    Get.offNamed(
+                      Routes.RESULT_FACE,
+                      arguments: result,
+                    );
+                  }
+                });
+              }
+
               if (controller.pageState == PageState.error) {
                 return Column(
                   children: [

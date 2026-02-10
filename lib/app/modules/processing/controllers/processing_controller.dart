@@ -10,12 +10,12 @@ import '/app/data/services/processing_workflow_service.dart';
 import '/app/data/repository/history_repository.dart';
 import '/app/data/models/history_item.dart';
 import '/app/modules/processing/models/processing_result.dart';
-import '/app/routes/app_pages.dart';
 import '/l10n/app_localizations.dart';
 
 class ProcessingController extends BaseController {
   final RxString _currentStep = 'Analyzing image...'.obs;
   final Rx<ContentType?> _contentType = Rx<ContentType?>(null);
+  final Rx<ProcessingResult?> _result = Rx<ProcessingResult?>(null);
   final ProcessingService _processingService = ProcessingService();
   final ProcessingWorkflowService _workflowService =
       ProcessingWorkflowService();
@@ -28,6 +28,7 @@ class ProcessingController extends BaseController {
 
   String get currentStep => _currentStep.value;
   ContentType? get contentType => _contentType.value;
+  ProcessingResult? get result => _result.value;
 
   void updateStep(String value) => _currentStep(value);
 
@@ -125,17 +126,7 @@ class ProcessingController extends BaseController {
         ),
       );
 
-      if (resultWithTitle.contentType == ContentType.document) {
-        if (Get.isBottomSheetOpen ?? false) {
-          Get.back();
-        }
-        Get.offNamed(Routes.RESULT_DOCUMENT, arguments: resultWithTitle);
-      } else {
-        if (Get.isBottomSheetOpen ?? false) {
-          Get.back();
-        }
-        Get.offNamed(Routes.RESULT_FACE, arguments: resultWithTitle);
-      }
+      _result(resultWithTitle);
     } catch (error) {
       showError(error.toString());
       updateStep(AppLocalizations.of(Get.context!)!.processingFailed);
