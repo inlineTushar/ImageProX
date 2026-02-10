@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-import '/app/modules/home/models/history_item.dart';
+import '/app/data/models/history_item.dart';
 
 const historyBoxName = 'history_items';
 

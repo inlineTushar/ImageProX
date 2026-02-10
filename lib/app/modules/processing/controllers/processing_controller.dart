@@ -12,7 +12,7 @@ import '/app/core/model/page_state.dart';
 import '/app/data/services/processing_service.dart';
 import '/app/data/services/vision_service.dart';
 import '/app/data/repository/history_repository.dart';
-import '/app/modules/home/models/history_item.dart';
+import '/app/data/models/history_item.dart';
 import '/app/modules/processing/models/processing_result.dart';
 import '/app/routes/app_pages.dart';
 import '/l10n/app_localizations.dart';
