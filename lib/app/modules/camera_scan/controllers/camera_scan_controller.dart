@@ -23,6 +23,7 @@ class CameraScanController extends BaseController {
   late final TextRecognizer _textRecognizer;
   bool _isProcessing = false;
   bool _isCapturing = false;
+  bool _isSwitching = false;
   int _frameCount = 0;
   static const double _scanOverlapThreshold = 0.2;
 
@@ -78,12 +79,15 @@ class CameraScanController extends BaseController {
   }
 
   Future<void> switchCamera() async {
-    if (!canSwitch) return;
+    if (!canSwitch || _isSwitching) return;
+    _isSwitching = true;
+    _isReady(false);
     _cameraIndex((_cameraIndex.value + 1) % _cameras.length);
     await _startCamera(_cameras[_cameraIndex.value]);
     _isReady(true);
     _frameCount = 0;
     _isProcessing = false;
+    _isSwitching = false;
   }
 
   Future<String?> takePicture() async {
