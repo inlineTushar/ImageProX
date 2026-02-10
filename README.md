@@ -2,6 +2,13 @@
 
 Image processing app with smart face detection and document scanning.
 
+# Preview
+
+## Preview
+
+https://github.com/user-attachments/assets/6c6b8201-d434-402c-90ae-c3b91d56065f
+
+
 **Key features**
 - Live camera scan window with adjustable size
 - Face flow: grayscale only detected faces
