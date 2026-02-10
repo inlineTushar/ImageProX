@@ -10,11 +10,11 @@ import '/app/data/models/processing_result.dart';
 class ProcessImageUseCase {
   ProcessImageUseCase({
     required HistoryRepository repository,
-    ProcessingService? processingService,
-    ProcessingWorkflowService? workflowService,
+    required ProcessingService processingService,
+    required ProcessingWorkflowService workflowService,
   })  : _repository = repository,
-        _processingService = processingService ?? ProcessingService(),
-        _workflowService = workflowService ?? ProcessingWorkflowService();
+        _processingService = processingService,
+        _workflowService = workflowService;
 
   final HistoryRepository _repository;
   final ProcessingService _processingService;
