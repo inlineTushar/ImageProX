@@ -10,6 +10,10 @@ class HomeBinding extends Bindings {
     if (!Get.isRegistered<HistoryRepository>()) {
       RepositoryBindings().dependencies();
     }
-    Get.lazyPut<HomeController>(() => HomeController());
+    Get.lazyPut<HomeController>(
+      () => HomeController(
+        repository: Get.find<HistoryRepository>(),
+      ),
+    );
   }
 }

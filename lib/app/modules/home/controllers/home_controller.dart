@@ -17,7 +17,10 @@ import '/app/bindings/repository_bindings.dart';
 import '/l10n/app_localizations.dart';
 
 class HomeController extends BaseController {
-  final HistoryRepository _repository = Get.find<HistoryRepository>();
+  HomeController({required HistoryRepository repository})
+      : _repository = repository;
+
+  final HistoryRepository _repository;
 
   final RxList<HistoryItem> _items = <HistoryItem>[].obs;
 
@@ -110,7 +113,12 @@ class HomeController extends BaseController {
     if (Get.isRegistered<ProcessingController>()) {
       Get.delete<ProcessingController>();
     }
-    Get.put(ProcessingController(), permanent: false).onInitWithImage(
+    Get.put(
+      ProcessingController(
+        repository: _repository,
+      ),
+      permanent: false,
+    ).onInitWithImage(
       imagePath,
       forcedType: forcedType,
       scanWidthFactor: scanWidthFactor,

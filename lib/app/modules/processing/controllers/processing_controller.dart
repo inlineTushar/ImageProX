@@ -13,13 +13,20 @@ import '/app/modules/processing/models/processing_result.dart';
 import '/l10n/app_localizations.dart';
 
 class ProcessingController extends BaseController {
+  ProcessingController({
+    required HistoryRepository repository,
+    ProcessingService? processingService,
+    ProcessingWorkflowService? workflowService,
+  })  : _processingService = processingService ?? ProcessingService(),
+        _workflowService = workflowService ?? ProcessingWorkflowService(),
+        _repository = repository;
+
   final RxString _currentStep = 'Analyzing image...'.obs;
   final Rx<ContentType?> _contentType = Rx<ContentType?>(null);
   final Rx<ProcessingResult?> _result = Rx<ProcessingResult?>(null);
-  final ProcessingService _processingService = ProcessingService();
-  final ProcessingWorkflowService _workflowService =
-      ProcessingWorkflowService();
-  final HistoryRepository _repository = Get.find<HistoryRepository>();
+  final ProcessingService _processingService;
+  final ProcessingWorkflowService _workflowService;
+  final HistoryRepository _repository;
 
   File? _inputFile;
   ContentType? _forcedType;
