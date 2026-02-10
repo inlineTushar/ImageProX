@@ -1,7 +1,5 @@
 import 'package:get/get.dart';
 
-import '/app/modules/dialog_select_source/bindings/dialog_select_source_binding.dart';
-import '/app/modules/dialog_select_source/views/dialog_select_source_view.dart';
 import '/app/modules/home/bindings/home_binding.dart';
 import '/app/modules/home/views/home_view.dart';
 import '/app/modules/camera_scan/bindings/camera_scan_binding.dart';
@@ -23,11 +21,6 @@ class AppPages {
       name: _Paths.HOME,
       page: () => const HomeView(),
       binding: HomeBinding(),
-    ),
-    GetPage(
-      name: _Paths.SELECT_SOURCE,
-      page: () => const DialogSelectSourceView(),
-      binding: DialogSelectSourceBinding(),
     ),
     GetPage(
       name: _Paths.CAMERA_SCAN,
