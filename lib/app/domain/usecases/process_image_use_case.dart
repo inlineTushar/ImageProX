@@ -21,7 +21,7 @@ class ProcessImageUseCase {
   final ProcessingWorkflowService _workflowService;
 
   Future<ProcessingResult> run(
-    File file, {
+    String imagePath, {
     ContentType? forcedType,
     double? scanWidthFactor,
     double? scanHeightFactor,
@@ -29,6 +29,7 @@ class ProcessImageUseCase {
     required String documentTitle,
     void Function(ContentType type)? onDetected,
   }) async {
+    final file = File(imagePath);
     final detection = await _workflowService.detectContent(
       file,
       forcedType: forcedType,

@@ -19,7 +19,7 @@ class ProcessingController extends BaseController {
   final Rx<ProcessingResult?> _result = Rx<ProcessingResult?>(null);
   final ProcessImageUseCase _processImageUseCase;
 
-  File? _inputFile;
+  String? _imagePath;
   ContentType? _forcedType;
   double? _scanWidthFactor;
   double? _scanHeightFactor;
@@ -39,7 +39,7 @@ class ProcessingController extends BaseController {
     super.onInit();
     final arg = Get.arguments;
     if (arg is String && arg.isNotEmpty) {
-      _inputFile = File(arg);
+      _imagePath = arg;
       _processImage();
     } else {
       showError(AppLocalizations.of(Get.context!)!.noImageSelected);
@@ -52,7 +52,7 @@ class ProcessingController extends BaseController {
     double? scanWidthFactor,
     double? scanHeightFactor,
   }) {
-    _inputFile = File(imagePath);
+    _imagePath = imagePath;
     _forcedType = forcedType;
     _scanWidthFactor = scanWidthFactor;
     _scanHeightFactor = scanHeightFactor;
@@ -60,8 +60,8 @@ class ProcessingController extends BaseController {
   }
 
   Future<void> _processImage() async {
-    final file = _inputFile;
-    if (file == null) return;
+    final imagePath = _imagePath;
+    if (imagePath == null || imagePath.isEmpty) return;
 
     setPageState(PageState.loading);
     updateStep(AppLocalizations.of(Get.context!)!.processingDetecting);
@@ -71,7 +71,7 @@ class ProcessingController extends BaseController {
           AppLocalizations.of(Get.context!)!.processingTimeout;
       final result = await _processImageUseCase
           .run(
-            file,
+            imagePath,
             forcedType: _forcedType,
             scanWidthFactor: _scanWidthFactor,
             scanHeightFactor: _scanHeightFactor,
