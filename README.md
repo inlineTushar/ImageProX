@@ -1,16 +1,100 @@
 # imageprox
 
-An image processing analysis app with smart face detection & document scanning with real-time processing
+Image processing app with smart face detection and document scanning.
 
-## Getting Started
+**Key features**
+- Live camera scan window with adjustable size
+- Face flow: grayscale only detected faces
+- Document flow: text detection, crop/enhance, PDF generation (text-first with image fallback)
+- History backed by Hive
 
-This project is a starting point for a Flutter application.
+## Build & Run
 
-A few resources to get you started if this is your first Flutter project:
+**Prereqs**
+- Flutter SDK (matching repo constraints)
+- Android Studio / Xcode for device builds
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+**Install deps**
+```bash
+flutter pub get
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+**Run**
+```bash
+flutter run
+```
+
+**Build**
+```bash
+flutter build apk
+flutter build ios
+```
+
+**Tests**
+```bash
+flutter test
+```
+
+## Architecture
+
+Clean-architecture leaning split:
+
+- **Domain**
+  - Entities: `HistoryEntry`, `ProcessedResult`
+  - Use cases: `HistoryUseCase`, `ProcessImageUseCase`
+  - Interfaces: `HistoryRepository`, `ImageProcessingService`, `PdfService`, `StorageService`
+  - Failures: `Failure`, `ProcessingFailure`, `StorageFailure`, `OcrFailure`
+
+- **Data**
+  - Models: `HistoryItem`, `ProcessingResult`, `ContentType`
+  - Mappers: `HistoryMapper`, `ProcessingResultMapper`
+  - Repositories: `HistoryRepositoryImpl` (Hive)
+  - Services (impl): `ImageProcessingServiceImpl`, `PdfServiceImpl`, `StorageServiceImpl`, `ProcessingWorkflowService`, `VisionService`, `ImagePreprocessor`
+
+- **Presentation (GetX)**
+  - Controllers: `HomeController`, `ProcessingController`, `CameraScanController`
+  - Views: `HomeView`, `ResultFaceView`, `ResultDocumentView`, `CameraScanView`
+  - Sheets: `ProcessingSheet`, `DialogSelectSourceSheet`
+
+Navigation is handled in UI (processing sheet), while use cases return domain entities.
+
+## Project Structure
+
+```
+lib/
+  app/
+    bindings/
+    core/
+    data/
+      local/
+      mappers/
+      models/
+      repository/
+      services/
+    domain/
+      entities/
+      failures/
+      repositories/
+      services/
+      usecases/
+    modules/
+      camera_scan/
+      home/
+      processing/
+      result_document/
+      result_face/
+      dialog_select_source/
+    routes/
+  l10n/
+assets/
+  fonts/
+test/
+  data/
+  domain/
+```
+
+## Notes
+
+- ML Kit is used for face detection and text recognition.
+- PDF text uses embedded Noto Sans (`assets/fonts/NotoSans-Regular.ttf`).
+- History stored in Hive box `history_items`.
