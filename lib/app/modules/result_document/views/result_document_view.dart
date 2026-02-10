@@ -136,12 +136,16 @@ class _PdfPreviewState extends State<_PdfPreview> {
           height: 420,
           width: 300,
           decoration: BoxDecoration(
-            color: const Color(0xFF2A2230),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.memory(pageImage.bytes, fit: BoxFit.cover),
+            child: Image.memory(
+              pageImage.bytes,
+              fit: BoxFit.contain,
+              gaplessPlayback: true,
+            ),
           ),
         );
       },
@@ -155,6 +159,7 @@ class _PdfPreviewState extends State<_PdfPreview> {
       width: 240,
       height: 320,
       format: PdfPageImageFormat.png,
+      backgroundColor: '#FFFFFF',
     );
     await page.close();
     if (image == null) {
@@ -168,7 +173,7 @@ class _PdfPreviewState extends State<_PdfPreview> {
       height: 420,
       width: 300,
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2230),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
       ),
       child: const Center(
