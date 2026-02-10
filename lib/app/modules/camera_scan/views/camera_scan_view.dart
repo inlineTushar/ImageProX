@@ -52,23 +52,16 @@ class CameraScanView extends BaseView<CameraScanController> {
             ),
           ),
           Positioned.fill(
-            child: _ScanOverlay(),
+            child: _ScanOverlay(
+              widthFactor: controller.scanWidthFactor,
+              heightFactor: controller.scanHeightFactor,
+            ),
           ),
           Positioned(
-            left: 0,
-            right: 0,
-            bottom: 24,
-            child: Center(
-              child: FloatingActionButton(
-                onPressed: () async {
-                  final path = await controller.takePicture();
-                  if (path == null || path.isEmpty) return;
-                  Get.back(result: {'path': path});
-                },
-                backgroundColor: AppColors.primary,
-                child: const Icon(Icons.camera_alt),
-              ),
-            ),
+            left: 16,
+            right: 16,
+            bottom: 20,
+            child: _ScanControls(controller: controller),
           ),
         ],
       );
@@ -77,20 +70,39 @@ class CameraScanView extends BaseView<CameraScanController> {
 }
 
 class _ScanOverlay extends StatelessWidget {
+  const _ScanOverlay({
+    required this.widthFactor,
+    required this.heightFactor,
+  });
+
+  final double widthFactor;
+  final double heightFactor;
+
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _ScanOverlayPainter(),
+      painter: _ScanOverlayPainter(
+        widthFactor: widthFactor,
+        heightFactor: heightFactor,
+      ),
       size: Size.infinite,
     );
   }
 }
 
 class _ScanOverlayPainter extends CustomPainter {
+  _ScanOverlayPainter({
+    required this.widthFactor,
+    required this.heightFactor,
+  });
+
+  final double widthFactor;
+  final double heightFactor;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final rectWidth = size.width * 0.75;
-    final rectHeight = size.height * 0.45;
+    final rectWidth = size.width * widthFactor;
+    final rectHeight = size.height * heightFactor;
     final left = (size.width - rectWidth) / 2;
     final top = (size.height - rectHeight) / 2;
     final rect = Rect.fromLTWH(left, top, rectWidth, rectHeight);
@@ -111,5 +123,118 @@ class _ScanOverlayPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _ScanOverlayPainter oldDelegate) {
+    return oldDelegate.widthFactor != widthFactor ||
+        oldDelegate.heightFactor != heightFactor;
+  }
+}
+
+class _ScanControls extends StatelessWidget {
+  const _ScanControls({required this.controller});
+
+  final CameraScanController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.55),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _LabeledSlider(
+            label: 'Width',
+            value: controller.scanWidthFactor,
+            min: 0.6,
+            max: 1.0,
+            onChanged: controller.updateScanWidth,
+          ),
+          const SizedBox(height: 8),
+          _LabeledSlider(
+            label: 'Height',
+            value: controller.scanHeightFactor,
+            min: 0.4,
+            max: 0.9,
+            onChanged: controller.updateScanHeight,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final path = await controller.takePicture();
+                if (path == null || path.isEmpty) return;
+                Get.back(
+                  result: {
+                    'path': path,
+                    'scanWidthFactor': controller.scanWidthFactor,
+                    'scanHeightFactor': controller.scanHeightFactor,
+                  },
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              icon: const Icon(Icons.check),
+              label: const Text('Confirm Window'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LabeledSlider extends StatelessWidget {
+  const _LabeledSlider({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  final String label;
+  final double value;
+  final double min;
+  final double max;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 56,
+          child: Text(
+            label,
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+        Expanded(
+          child: Slider(
+            value: value.clamp(min, max),
+            min: min,
+            max: max,
+            onChanged: onChanged,
+            activeColor: AppColors.primary,
+            inactiveColor: Colors.white24,
+          ),
+        ),
+        SizedBox(
+          width: 44,
+          child: Text(
+            value.toStringAsFixed(2),
+            textAlign: TextAlign.right,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+        ),
+      ],
+    );
+  }
 }

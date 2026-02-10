@@ -50,14 +50,14 @@ class HomeController extends BaseController {
     final result = await Get.toNamed(Routes.CAMERA_SCAN);
     if (result is! Map) return;
     final imagePath = result['path'] as String?;
-    final type = result['type'] as String?;
+    final scanWidth = result['scanWidthFactor'] as double?;
+    final scanHeight = result['scanHeightFactor'] as double?;
     if (imagePath == null || imagePath.isEmpty) return;
-    final forcedType = type == 'face'
-        ? ContentType.face
-        : type == 'document'
-            ? ContentType.document
-            : null;
-    _openProcessingSheet(imagePath, forcedType: forcedType);
+    _openProcessingSheet(
+      imagePath,
+      scanWidthFactor: scanWidth,
+      scanHeightFactor: scanHeight,
+    );
   }
 
   Future<void> onGallerySelected() async {
@@ -97,15 +97,24 @@ class HomeController extends BaseController {
     return status.isGranted;
   }
 
-  void _openProcessingSheet(String imagePath, {ContentType? forcedType}) {
+  void _openProcessingSheet(
+    String imagePath, {
+    ContentType? forcedType,
+    double? scanWidthFactor,
+    double? scanHeightFactor,
+  }) {
     if (!Get.isRegistered<HistoryRepository>()) {
       RepositoryBindings().dependencies();
     }
     if (Get.isRegistered<ProcessingController>()) {
       Get.delete<ProcessingController>();
     }
-    Get.put(ProcessingController(), permanent: false)
-        .onInitWithImage(imagePath, forcedType: forcedType);
+    Get.put(ProcessingController(), permanent: false).onInitWithImage(
+      imagePath,
+      forcedType: forcedType,
+      scanWidthFactor: scanWidthFactor,
+      scanHeightFactor: scanHeightFactor,
+    );
 
     Get.bottomSheet(
       const ProcessingSheet(),

@@ -14,6 +14,8 @@ import '/app/core/base/base_controller.dart';
 class CameraScanController extends BaseController {
   final RxBool _isReady = false.obs;
   final RxInt _cameraIndex = 0.obs;
+  final RxDouble _scanWidthFactor = 0.98.obs;
+  final RxDouble _scanHeightFactor = 0.8.obs;
 
   List<CameraDescription> _cameras = [];
   CameraController? _controller;
@@ -22,14 +24,17 @@ class CameraScanController extends BaseController {
   bool _isProcessing = false;
   bool _isCapturing = false;
   int _frameCount = 0;
-  static const double _scanWidthFactor = 0.98;
-  static const double _scanHeightFactor = 0.8;
   static const double _scanOverlapThreshold = 0.2;
 
   bool get isReady => _isReady.value;
   CameraController? get controller => _controller;
   int get cameraIndex => _cameraIndex.value;
   bool get canSwitch => _cameras.length > 1;
+  double get scanWidthFactor => _scanWidthFactor.value;
+  double get scanHeightFactor => _scanHeightFactor.value;
+
+  void updateScanWidth(double value) => _scanWidthFactor(value);
+  void updateScanHeight(double value) => _scanHeightFactor(value);
 
   @override
   void onInit() {
@@ -53,7 +58,7 @@ class CameraScanController extends BaseController {
       }
       await _startCamera(_cameras[_cameraIndex.value]);
       _isReady(true);
-      _startStream();
+      // Auto-detection runs on confirm; no stream processing needed.
     } catch (e) {
       showError(e.toString());
     }
@@ -79,7 +84,6 @@ class CameraScanController extends BaseController {
     _isReady(true);
     _frameCount = 0;
     _isProcessing = false;
-    _startStream();
   }
 
   Future<String?> takePicture() async {
@@ -213,8 +217,8 @@ class CameraScanController extends BaseController {
   }
 
   Rect _scanWindow(Size imageSize) {
-    final rectWidth = imageSize.width * _scanWidthFactor;
-    final rectHeight = imageSize.height * _scanHeightFactor;
+    final rectWidth = imageSize.width * _scanWidthFactor.value;
+    final rectHeight = imageSize.height * _scanHeightFactor.value;
     final left = (imageSize.width - rectWidth) / 2;
     final top = (imageSize.height - rectHeight) / 2;
     return Rect.fromLTWH(left, top, rectWidth, rectHeight);

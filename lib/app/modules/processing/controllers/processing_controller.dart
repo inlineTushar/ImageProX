@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:get/get.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:flutter/foundation.dart';
+import 'package:image/image.dart' as img;
 
 import '/app/core/base/base_controller.dart';
 import '/app/core/model/page_state.dart';
@@ -26,6 +28,8 @@ class ProcessingController extends BaseController {
 
   File? _inputFile;
   ContentType? _forcedType;
+  double? _scanWidthFactor;
+  double? _scanHeightFactor;
 
   String get currentStep => _currentStep.value;
   ContentType? get contentType => _contentType.value;
@@ -48,9 +52,16 @@ class ProcessingController extends BaseController {
     }
   }
 
-  void onInitWithImage(String imagePath, {ContentType? forcedType}) {
+  void onInitWithImage(
+    String imagePath, {
+    ContentType? forcedType,
+    double? scanWidthFactor,
+    double? scanHeightFactor,
+  }) {
     _inputFile = File(imagePath);
     _forcedType = forcedType;
+    _scanWidthFactor = scanWidthFactor;
+    _scanHeightFactor = scanHeightFactor;
     _processImage();
   }
 
@@ -134,9 +145,12 @@ class ProcessingController extends BaseController {
   }
 
   Future<_DetectionResult> _detectContent(File file) async {
+    final scanRect = await _scanWindowForFile(file);
     final faces = await _visionService.detectFaces(file);
-    if (faces.isNotEmpty) {
-      final boxes = faces
+    final filteredFaces =
+        scanRect == null ? faces : faces.where((face) => _overlaps(face.boundingBox, scanRect)).toList(growable: false);
+    if (filteredFaces.isNotEmpty) {
+      final boxes = filteredFaces
           .map((face) => [
                 face.boundingBox.left,
                 face.boundingBox.top,
@@ -152,7 +166,7 @@ class ProcessingController extends BaseController {
     }
 
     final text = await _recognizeTextWithFallback(file);
-    final bounds = _visionService.computeTextBounds(text);
+    final bounds = _computeTextBoundsForWindow(text, scanRect);
     final textBounds = bounds == null
         ? const <double>[]
         : [
@@ -161,7 +175,15 @@ class ProcessingController extends BaseController {
             bounds.right,
             bounds.bottom,
           ];
-    final extractedText = _extractTextLines(text);
+    final extractedText = _extractTextLines(text, scanRect: scanRect);
+    if (scanRect != null && extractedText.isEmpty) {
+      return _DetectionResult(
+        contentType: ContentType.document,
+        faceBoxes: const [],
+        textBounds: const [],
+        extractedText: null,
+      );
+    }
     return _DetectionResult(
       contentType: ContentType.document,
       faceBoxes: const [],
@@ -175,8 +197,11 @@ class ProcessingController extends BaseController {
     ContentType type,
   ) async {
     if (type == ContentType.face) {
+      final scanRect = await _scanWindowForFile(file);
       final faces = await _visionService.detectFaces(file);
-      final boxes = faces
+      final filteredFaces =
+          scanRect == null ? faces : faces.where((face) => _overlaps(face.boundingBox, scanRect)).toList(growable: false);
+      final boxes = filteredFaces
           .map((face) => [
                 face.boundingBox.left,
                 face.boundingBox.top,
@@ -191,8 +216,9 @@ class ProcessingController extends BaseController {
       );
     }
 
+    final scanRect = await _scanWindowForFile(file);
     final text = await _recognizeTextWithFallback(file);
-    final bounds = _visionService.computeTextBounds(text);
+    final bounds = _computeTextBoundsForWindow(text, scanRect);
     final textBounds = bounds == null
         ? const <double>[]
         : [
@@ -201,7 +227,7 @@ class ProcessingController extends BaseController {
             bounds.right,
             bounds.bottom,
           ];
-    final extractedText = _extractTextLines(text);
+    final extractedText = _extractTextLines(text, scanRect: scanRect);
     return _DetectionResult(
       contentType: ContentType.document,
       faceBoxes: const [],
@@ -233,11 +259,14 @@ class ProcessingController extends BaseController {
     return enhanced;
   }
 
-  String _extractTextLines(RecognizedText text) {
+  String _extractTextLines(RecognizedText text, {Rect? scanRect}) {
     if (text.blocks.isEmpty) return '';
 
     final lines = <String>[];
     for (final block in text.blocks) {
+      if (scanRect != null && !_overlaps(block.boundingBox, scanRect)) {
+        continue;
+      }
       if (block.lines.isEmpty) {
         final value = block.text.trim();
         if (value.isNotEmpty) {
@@ -246,6 +275,9 @@ class ProcessingController extends BaseController {
         continue;
       }
       for (final line in block.lines) {
+        if (scanRect != null && !_overlaps(line.boundingBox, scanRect)) {
+          continue;
+        }
         final value = line.text.trim();
         if (value.isNotEmpty) {
           lines.add(value);
@@ -260,6 +292,54 @@ class ProcessingController extends BaseController {
 
     return lines.join('\n').trim();
   }
+
+  Future<Rect?> _scanWindowForFile(File file) async {
+    final widthFactor = _scanWidthFactor;
+    final heightFactor = _scanHeightFactor;
+    if (widthFactor == null || heightFactor == null) return null;
+
+    final bytes = await file.readAsBytes();
+    final decoded = img.decodeImage(bytes);
+    if (decoded == null) return null;
+
+    final oriented = img.bakeOrientation(decoded);
+    final imageSize = Size(
+      oriented.width.toDouble(),
+      oriented.height.toDouble(),
+    );
+    final rectWidth = imageSize.width * widthFactor;
+    final rectHeight = imageSize.height * heightFactor;
+    final left = (imageSize.width - rectWidth) / 2;
+    final top = (imageSize.height - rectHeight) / 2;
+    return Rect.fromLTWH(left, top, rectWidth, rectHeight);
+  }
+
+  Rect? _computeTextBoundsForWindow(RecognizedText text, Rect? scanRect) {
+    if (text.blocks.isEmpty) return null;
+
+    double left = double.infinity;
+    double top = double.infinity;
+    double right = 0;
+    double bottom = 0;
+    var found = false;
+
+    for (final block in text.blocks) {
+      if (scanRect != null && !_overlaps(block.boundingBox, scanRect)) {
+        continue;
+      }
+      final rect = block.boundingBox;
+      left = left > rect.left ? rect.left : left;
+      top = top > rect.top ? rect.top : top;
+      right = right < rect.right ? rect.right : right;
+      bottom = bottom < rect.bottom ? rect.bottom : bottom;
+      found = true;
+    }
+
+    if (!found) return null;
+    return Rect.fromLTRB(left, top, right, bottom);
+  }
+
+  bool _overlaps(Rect a, Rect b) => a.overlaps(b);
 }
 
 class _DetectionResult {
