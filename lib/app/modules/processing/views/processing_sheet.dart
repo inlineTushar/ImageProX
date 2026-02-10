@@ -18,6 +18,13 @@ class ProcessingSheet extends StatefulWidget {
 
 class _ProcessingSheetState extends State<ProcessingSheet> {
   bool _didNavigate = false;
+  late final ProcessingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.find<ProcessingController>();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,19 +50,20 @@ class _ProcessingSheetState extends State<ProcessingSheet> {
               ),
             ),
             const SizedBox(height: 20),
-            Obx(() => Text(
-                  Get.find<ProcessingController>().currentStep,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: AppColors.textSecondary,
-                  ),
-                )),
+            Obx(() {
+              return Text(
+                _controller.currentStep,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                ),
+              );
+            }),
             const SizedBox(height: 20),
             const CircularProgressIndicator(color: AppColors.primary),
             Obx(() {
-              final controller = Get.find<ProcessingController>();
-              final result = controller.result;
+              final result = _controller.result;
               if (result != null && !_didNavigate) {
                 _didNavigate = true;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -76,7 +84,7 @@ class _ProcessingSheetState extends State<ProcessingSheet> {
                 });
               }
 
-              if (controller.pageState == PageState.error) {
+              if (_controller.pageState == PageState.error) {
                 return Column(
                   children: [
                     const SizedBox(height: 16),
@@ -86,7 +94,7 @@ class _ProcessingSheetState extends State<ProcessingSheet> {
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton(
-                      onPressed: controller.retry,
+                      onPressed: _controller.retry,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
