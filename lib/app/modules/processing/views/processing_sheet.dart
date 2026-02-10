@@ -10,7 +10,12 @@ import '/app/routes/app_pages.dart';
 import '/l10n/app_localizations.dart';
 
 class ProcessingSheet extends StatefulWidget {
-  const ProcessingSheet({super.key});
+  const ProcessingSheet({
+    super.key,
+    required this.controller,
+  });
+
+  final ProcessingController controller;
 
   @override
   State<ProcessingSheet> createState() => _ProcessingSheetState();
@@ -18,12 +23,10 @@ class ProcessingSheet extends StatefulWidget {
 
 class _ProcessingSheetState extends State<ProcessingSheet> {
   bool _didNavigate = false;
-  late final ProcessingController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = Get.find<ProcessingController>();
   }
 
   @override
@@ -52,7 +55,7 @@ class _ProcessingSheetState extends State<ProcessingSheet> {
             const SizedBox(height: 20),
             Obx(() {
               return Text(
-                _controller.currentStep,
+                widget.controller.currentStep,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 16,
@@ -63,7 +66,7 @@ class _ProcessingSheetState extends State<ProcessingSheet> {
             const SizedBox(height: 20),
             const CircularProgressIndicator(color: AppColors.primary),
             Obx(() {
-              final result = _controller.result;
+              final result = widget.controller.result;
               if (result != null && !_didNavigate) {
                 _didNavigate = true;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -84,7 +87,7 @@ class _ProcessingSheetState extends State<ProcessingSheet> {
                 });
               }
 
-              if (_controller.pageState == PageState.error) {
+              if (widget.controller.pageState == PageState.error) {
                 return Column(
                   children: [
                     const SizedBox(height: 16),
@@ -94,7 +97,7 @@ class _ProcessingSheetState extends State<ProcessingSheet> {
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton(
-                      onPressed: _controller.retry,
+                      onPressed: widget.controller.retry,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,

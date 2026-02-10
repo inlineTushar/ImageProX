@@ -115,12 +115,13 @@ class HomeController extends BaseController {
     if (Get.isRegistered<ProcessingController>()) {
       Get.delete<ProcessingController>();
     }
-    Get.put(
+    final controller = Get.put(
       ProcessingController(
         processImageUseCase: _processImageUseCase,
       ),
       permanent: false,
-    ).onInitWithImage(
+    );
+    controller.onInitWithImage(
       imagePath,
       forcedType: forcedType,
       scanWidthFactor: scanWidthFactor,
@@ -128,7 +129,7 @@ class HomeController extends BaseController {
     );
 
     Get.bottomSheet(
-      const ProcessingSheet(),
+      ProcessingSheet(controller: controller),
       isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
