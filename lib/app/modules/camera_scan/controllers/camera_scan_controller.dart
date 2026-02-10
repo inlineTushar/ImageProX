@@ -22,9 +22,9 @@ class CameraScanController extends BaseController {
   bool _isProcessing = false;
   bool _isCapturing = false;
   int _frameCount = 0;
-  static const double _scanWidthFactor = 0.75;
-  static const double _scanHeightFactor = 0.45;
-  static const double _scanOverlapThreshold = 0.4;
+  static const double _scanWidthFactor = 0.98;
+  static const double _scanHeightFactor = 0.8;
+  static const double _scanOverlapThreshold = 0.2;
 
   bool get isReady => _isReady.value;
   CameraController? get controller => _controller;
