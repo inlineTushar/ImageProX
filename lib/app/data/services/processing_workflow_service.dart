@@ -38,7 +38,20 @@ class ProcessingWorkflowService {
       return faceResult;
     }
 
-    return _detectDocument(file, scanWidthFactor, scanHeightFactor);
+    final docResult =
+        await _detectDocument(file, scanWidthFactor, scanHeightFactor);
+    if (_isLikelyDocument(docResult)) {
+      return docResult;
+    }
+
+    // If text is weak and no faces found, default to face flow to avoid
+    // forcing document/PDF output on photos.
+    return DetectionResult(
+      contentType: ContentType.face,
+      faceBoxes: const [],
+      textBounds: const [],
+      extractedText: null,
+    );
   }
 
   Future<DetectionResult> _detectFaces(
@@ -198,6 +211,17 @@ class ProcessingWorkflowService {
   }
 
   bool _overlaps(Rect a, Rect b) => a.overlaps(b);
+
+  bool _isLikelyDocument(DetectionResult result) {
+    if (result.contentType != ContentType.document) return false;
+    if (result.extractedText == null) return false;
+    final text = result.extractedText!.trim();
+    if (text.isEmpty) return false;
+
+    // Heuristic: require a minimum amount of text to call it a document.
+    final lineCount = text.split('\n').where((line) => line.trim().isNotEmpty).length;
+    return lineCount >= 3 || text.length >= 80;
+  }
 
   Future<void> dispose() async {
     await _visionService.dispose();

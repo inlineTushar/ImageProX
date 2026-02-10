@@ -8,6 +8,7 @@ import '/app/data/services/vision_service.dart';
 import '/app/data/services/image_processing_service_impl.dart';
 import '/app/data/services/pdf_service_impl.dart';
 import '/app/data/services/storage_service_impl.dart';
+import '/app/data/services/image_normalizer.dart';
 import '/app/domain/services/image_processing_service.dart';
 import '/app/domain/services/pdf_service.dart';
 import '/app/domain/services/storage_service.dart';
@@ -39,6 +40,7 @@ class HomeBinding extends Bindings {
     );
     Get.lazyPut<PdfService>(() => PdfServiceImpl());
     Get.lazyPut<StorageService>(() => StorageServiceImpl());
+    Get.lazyPut<ImageNormalizer>(() => ImageNormalizer());
     Get.lazyPut<ProcessImageUseCase>(
       () => ProcessImageUseCase(
         repository: Get.find<HistoryRepository>(),
@@ -46,6 +48,7 @@ class HomeBinding extends Bindings {
         pdfService: Get.find<PdfService>(),
         storageService: Get.find<StorageService>(),
         workflowService: Get.find<ProcessingWorkflowService>(),
+        imageNormalizer: Get.find<ImageNormalizer>(),
       ),
     );
     Get.lazyPut<HomeController>(

@@ -14,6 +14,7 @@ import '/app/domain/services/storage_service.dart';
 import '/app/domain/entities/processed_result.dart';
 import '/app/domain/entities/history_entry.dart';
 import '/app/domain/failures/failure.dart';
+import '/app/data/services/image_normalizer.dart';
 
 class ProcessImageUseCase {
   ProcessImageUseCase({
@@ -24,13 +25,15 @@ class ProcessImageUseCase {
     required ProcessingWorkflowService workflowService,
     HistoryMapper? historyMapper,
     ProcessingResultMapper? resultMapper,
+    ImageNormalizer? imageNormalizer,
   })  : _repository = repository,
         _imageProcessingService = imageProcessingService,
         _pdfService = pdfService,
         _storageService = storageService,
         _workflowService = workflowService,
         _historyMapper = historyMapper ?? HistoryMapper(),
-        _resultMapper = resultMapper ?? ProcessingResultMapper();
+        _resultMapper = resultMapper ?? ProcessingResultMapper(),
+        _imageNormalizer = imageNormalizer ?? ImageNormalizer();
 
   final HistoryRepository _repository;
   final ImageProcessingService _imageProcessingService;
@@ -39,6 +42,7 @@ class ProcessImageUseCase {
   final ProcessingWorkflowService _workflowService;
   final HistoryMapper _historyMapper;
   final ProcessingResultMapper _resultMapper;
+  final ImageNormalizer _imageNormalizer;
 
   String _two(int value) => value.toString().padLeft(2, '0');
 
@@ -51,40 +55,60 @@ class ProcessImageUseCase {
     required String documentTitle,
     void Function(ContentType type)? onDetected,
   }) async {
-    final file = File(imagePath);
-    final detection = await _workflowService
-        .detectContent(
-          file,
-          forcedType: forcedType,
-          scanWidthFactor: scanWidthFactor,
-          scanHeightFactor: scanHeightFactor,
-        )
-        .catchError((e) => throw ProcessingFailure(e.toString()));
+    final originalFile = File(imagePath);
+    final normalizedFile = await _imageNormalizer.normalize(originalFile);
+    final file = normalizedFile ?? originalFile;
+    late final DetectionResult detection;
+    try {
+      detection = await _workflowService.detectContent(
+        file,
+        forcedType: forcedType,
+        scanWidthFactor: scanWidthFactor,
+        scanHeightFactor: scanHeightFactor,
+      );
+    } catch (e) {
+      if (normalizedFile != null && await normalizedFile.exists()) {
+        await normalizedFile.delete();
+      }
+      throw ProcessingFailure(e.toString());
+    }
 
     onDetected?.call(detection.contentType);
 
-    final processedBytes = await _imageProcessingService
-        .process(
-          file.path,
-          contentType: detection.contentType,
-          faceBoxes: detection.faceBoxes,
-          textBounds: detection.textBounds,
-        )
-        .catchError((e) => throw ProcessingFailure(e.toString()));
+    late final Uint8List processedBytes;
+    try {
+      processedBytes = await _imageProcessingService.process(
+        file.path,
+        contentType: detection.contentType,
+        faceBoxes: detection.faceBoxes,
+        textBounds: detection.textBounds,
+      );
+    } catch (e) {
+      if (normalizedFile != null && await normalizedFile.exists()) {
+        await normalizedFile.delete();
+      }
+      throw ProcessingFailure(e.toString());
+    }
 
     final now = DateTime.now();
     final timestamp =
         '${now.year}${_two(now.month)}${_two(now.day)}_${_two(now.hour)}${_two(now.minute)}${_two(now.second)}';
 
-    final processedFile = await _storageService
-        .saveBytes(
-          processedBytes,
-          type: detection.contentType == ContentType.face
-              ? StorageType.face
-              : StorageType.document,
-          filename: '${detection.contentType.name}_$timestamp.jpg',
-        )
-        .catchError((e) => throw StorageFailure(e.toString()));
+    late final File processedFile;
+    try {
+      processedFile = await _storageService.saveBytes(
+        processedBytes,
+        type: detection.contentType == ContentType.face
+            ? StorageType.face
+            : StorageType.document,
+        filename: '${detection.contentType.name}_$timestamp.jpg',
+      );
+    } catch (e) {
+      if (normalizedFile != null && await normalizedFile.exists()) {
+        await normalizedFile.delete();
+      }
+      throw StorageFailure(e.toString());
+    }
 
     String? pdfPath;
     if (detection.contentType == ContentType.document) {
@@ -105,13 +129,19 @@ class ProcessImageUseCase {
           throw ProcessingFailure(e.toString());
         }
       }
-      final pdfFile = await _storageService
-          .saveBytes(
-            Uint8List.fromList(pdfBytes),
-            type: StorageType.pdf,
-            filename: 'document_$timestamp.pdf',
-          )
-          .catchError((e) => throw StorageFailure(e.toString()));
+      late final File pdfFile;
+      try {
+        pdfFile = await _storageService.saveBytes(
+          Uint8List.fromList(pdfBytes),
+          type: StorageType.pdf,
+          filename: 'document_$timestamp.pdf',
+        );
+      } catch (e) {
+        if (normalizedFile != null && await normalizedFile.exists()) {
+          await normalizedFile.delete();
+        }
+        throw StorageFailure(e.toString());
+      }
       pdfPath = pdfFile.path;
     }
 
@@ -141,6 +171,10 @@ class ProcessImageUseCase {
         ),
       ),
     );
+
+    if (normalizedFile != null && await normalizedFile.exists()) {
+      await normalizedFile.delete();
+    }
 
     return _resultMapper.toDomain(resultWithTitle);
   }
