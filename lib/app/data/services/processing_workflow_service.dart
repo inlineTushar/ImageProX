@@ -6,12 +6,17 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 
 import '/app/data/models/content_type.dart';
 import '/app/data/services/vision_service.dart';
+import '/app/data/services/image_preprocessor.dart';
 
 class ProcessingWorkflowService {
-  ProcessingWorkflowService({VisionService? visionService})
-      : _visionService = visionService ?? VisionService();
+  ProcessingWorkflowService({
+    VisionService? visionService,
+    ImagePreprocessor? imagePreprocessor,
+  })  : _visionService = visionService ?? VisionService(),
+        _imagePreprocessor = imagePreprocessor ?? ImagePreprocessor();
 
   final VisionService _visionService;
+  final ImagePreprocessor _imagePreprocessor;
 
   Future<DetectionResult> detectContent(
     File file, {
@@ -98,7 +103,17 @@ class ProcessingWorkflowService {
     if (extracted.isNotEmpty) {
       return text;
     }
-    return _visionService.recognizeTextEnhanced(file);
+    final enhancedFile = await _imagePreprocessor.enhanceForOcr(file);
+    if (enhancedFile == null) {
+      return text;
+    }
+    try {
+      return await _visionService.recognizeText(enhancedFile);
+    } finally {
+      if (await enhancedFile.exists()) {
+        await enhancedFile.delete();
+      }
+    }
   }
 
   String _extractTextLines(RecognizedText text, {Rect? scanRect}) {
