@@ -7,9 +7,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '/app/core/base/base_controller.dart';
-import '/app/data/repository/history_repository.dart';
 import '/app/data/models/history_item.dart';
 import '/app/data/models/content_type.dart';
+import '/app/domain/usecases/history_use_case.dart';
+import '/app/domain/usecases/process_image_use_case.dart';
 import '/app/routes/app_pages.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
 import '/app/modules/processing/views/processing_sheet.dart';
@@ -17,10 +18,14 @@ import '/app/bindings/repository_bindings.dart';
 import '/l10n/app_localizations.dart';
 
 class HomeController extends BaseController {
-  HomeController({required HistoryRepository repository})
-      : _repository = repository;
+  HomeController({
+    required HistoryUseCase historyUseCase,
+    required ProcessImageUseCase processImageUseCase,
+  })  : _historyUseCase = historyUseCase,
+        _processImageUseCase = processImageUseCase;
 
-  final HistoryRepository _repository;
+  final HistoryUseCase _historyUseCase;
+  final ProcessImageUseCase _processImageUseCase;
 
   final RxList<HistoryItem> _items = <HistoryItem>[].obs;
 
@@ -33,13 +38,13 @@ class HomeController extends BaseController {
   void onInit() {
     super.onInit();
     loadHistory();
-    _subscription = _repository.watchHistory().listen((items) {
+    _subscription = _historyUseCase.watchHistory().listen((items) {
       _items.assignAll(items);
     });
   }
 
   void loadHistory() {
-    final data = _repository.loadHistory();
+    final data = _historyUseCase.loadHistory();
     _items.assignAll(data);
   }
 
@@ -107,15 +112,12 @@ class HomeController extends BaseController {
     double? scanWidthFactor,
     double? scanHeightFactor,
   }) {
-    if (!Get.isRegistered<HistoryRepository>()) {
-      RepositoryBindings().dependencies();
-    }
     if (Get.isRegistered<ProcessingController>()) {
       Get.delete<ProcessingController>();
     }
     Get.put(
       ProcessingController(
-        repository: _repository,
+        processImageUseCase: _processImageUseCase,
       ),
       permanent: false,
     ).onInitWithImage(

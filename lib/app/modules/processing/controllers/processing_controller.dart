@@ -5,28 +5,19 @@ import 'package:get/get.dart';
 import '/app/core/base/base_controller.dart';
 import '/app/core/model/page_state.dart';
 import '/app/data/models/content_type.dart';
-import '/app/data/services/processing_service.dart';
-import '/app/data/services/processing_workflow_service.dart';
-import '/app/data/repository/history_repository.dart';
-import '/app/data/models/history_item.dart';
 import '/app/modules/processing/models/processing_result.dart';
+import '/app/domain/usecases/process_image_use_case.dart';
 import '/l10n/app_localizations.dart';
 
 class ProcessingController extends BaseController {
   ProcessingController({
-    required HistoryRepository repository,
-    ProcessingService? processingService,
-    ProcessingWorkflowService? workflowService,
-  })  : _processingService = processingService ?? ProcessingService(),
-        _workflowService = workflowService ?? ProcessingWorkflowService(),
-        _repository = repository;
+    required ProcessImageUseCase processImageUseCase,
+  }) : _processImageUseCase = processImageUseCase;
 
   final RxString _currentStep = 'Analyzing image...'.obs;
   final Rx<ContentType?> _contentType = Rx<ContentType?>(null);
   final Rx<ProcessingResult?> _result = Rx<ProcessingResult?>(null);
-  final ProcessingService _processingService;
-  final ProcessingWorkflowService _workflowService;
-  final HistoryRepository _repository;
+  final ProcessImageUseCase _processImageUseCase;
 
   File? _inputFile;
   ContentType? _forcedType;
@@ -78,62 +69,28 @@ class ProcessingController extends BaseController {
     try {
       final timeoutMessage =
           AppLocalizations.of(Get.context!)!.processingTimeout;
-      final detection = await _workflowService
-          .detectContent(
+      final result = await _processImageUseCase
+          .run(
             file,
             forcedType: _forcedType,
             scanWidthFactor: _scanWidthFactor,
             scanHeightFactor: _scanHeightFactor,
+            faceTitle: AppLocalizations.of(Get.context!)!.faceProcessed,
+            documentTitle: AppLocalizations.of(Get.context!)!.documentScan,
+            onDetected: (type) {
+              _contentType(type);
+              updateStep(type == ContentType.face
+                  ? AppLocalizations.of(Get.context!)!.processingFace
+                  : AppLocalizations.of(Get.context!)!.processingDocument);
+            },
           )
           .timeout(const Duration(seconds: 12), onTimeout: () {
         throw TimeoutException(timeoutMessage);
       });
 
-      _contentType(detection.contentType);
-      updateStep(detection.contentType == ContentType.face
-          ? AppLocalizations.of(Get.context!)!.processingFace
-          : AppLocalizations.of(Get.context!)!.processingDocument);
-
-      final result = await _processingService.process(
-        file.path,
-        contentType: detection.contentType,
-        faceBoxes: detection.faceBoxes,
-        textBounds: detection.textBounds,
-        extractedText: detection.extractedText,
-      );
-
       setPageState(PageState.success);
       updateStep(AppLocalizations.of(Get.context!)!.processingPreparing);
-
-      final localizedTitle = detection.contentType == ContentType.face
-          ? AppLocalizations.of(Get.context!)!.faceProcessed
-          : AppLocalizations.of(Get.context!)!.documentScan;
-      final resultWithTitle = ProcessingResult(
-        originalPath: result.originalPath,
-        processedImagePath: result.processedImagePath,
-        contentType: result.contentType,
-        title: localizedTitle,
-        pdfPath: result.pdfPath,
-        extractedText: detection.extractedText,
-      );
-
-      await _repository.addHistoryItem(
-        HistoryItem(
-          id: DateTime.now().microsecondsSinceEpoch.toString(),
-          type: detection.contentType == ContentType.face
-              ? HistoryType.face
-              : HistoryType.document,
-          title: resultWithTitle.title,
-          createdAt: DateTime.now(),
-          originalPath: resultWithTitle.originalPath,
-          processedPath: resultWithTitle.processedImagePath,
-          thumbnailPath: resultWithTitle.processedImagePath,
-          pdfPath: resultWithTitle.pdfPath,
-          extractedText: resultWithTitle.extractedText,
-        ),
-      );
-
-      _result(resultWithTitle);
+      _result(result);
     } catch (error) {
       showError(error.toString());
       updateStep(AppLocalizations.of(Get.context!)!.processingFailed);
@@ -143,7 +100,7 @@ class ProcessingController extends BaseController {
 
   @override
   void onClose() {
-    _workflowService.dispose();
+    _processImageUseCase.dispose();
     super.onClose();
   }
 }
