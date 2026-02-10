@@ -5,7 +5,7 @@ import '/app/data/models/history_item.dart';
 import '/app/data/repository/history_repository.dart';
 import '/app/data/services/processing_service.dart';
 import '/app/data/services/processing_workflow_service.dart';
-import '/app/modules/processing/models/processing_result.dart';
+import '/app/data/models/processing_result.dart';
 
 class ProcessImageUseCase {
   ProcessImageUseCase({

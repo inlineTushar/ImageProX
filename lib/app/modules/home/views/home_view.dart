@@ -11,7 +11,7 @@ import '/app/modules/home/controllers/home_controller.dart';
 import '/app/data/models/history_item.dart';
 import '/app/data/models/content_type.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
-import '/app/modules/processing/models/processing_result.dart';
+import '/app/data/models/processing_result.dart';
 import '/app/routes/app_pages.dart';
 import '/l10n/app_localizations.dart';
 

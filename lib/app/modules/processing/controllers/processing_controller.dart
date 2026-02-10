@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import '/app/core/base/base_controller.dart';
 import '/app/core/model/page_state.dart';
 import '/app/data/models/content_type.dart';
-import '/app/modules/processing/models/processing_result.dart';
+import '/app/data/models/processing_result.dart';
 import '/app/domain/usecases/process_image_use_case.dart';
 import '/l10n/app_localizations.dart';
 
