@@ -7,8 +7,8 @@ import 'package:pdf/pdf.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '/app/data/models/content_type.dart';
 import '/app/data/services/storage_service.dart';
-import '/app/modules/processing/controllers/processing_controller.dart';
 import '/app/modules/processing/models/processing_result.dart';
 
 class ProcessingService {

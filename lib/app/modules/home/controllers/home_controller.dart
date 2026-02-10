@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '/app/core/base/base_controller.dart';
 import '/app/data/repository/history_repository.dart';
 import '/app/data/models/history_item.dart';
+import '/app/data/models/content_type.dart';
 import '/app/routes/app_pages.dart';
 import '/app/modules/processing/controllers/processing_controller.dart';
 import '/app/modules/processing/views/processing_sheet.dart';

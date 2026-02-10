@@ -1,4 +1,4 @@
-import '/app/modules/processing/controllers/processing_controller.dart';
+import '/app/data/models/content_type.dart';
 
 class ProcessingResult {
   ProcessingResult({
