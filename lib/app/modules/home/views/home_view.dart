@@ -8,10 +8,9 @@ import '/app/core/values/app_colors.dart';
 import '/app/core/values/app_values.dart';
 import '/app/modules/dialog_select_source/views/dialog_select_source_sheet.dart';
 import '/app/modules/home/controllers/home_controller.dart';
-import '/app/data/models/history_item.dart';
 import '/app/data/models/content_type.dart';
-import '/app/modules/processing/controllers/processing_controller.dart';
-import '/app/data/models/processing_result.dart';
+import '/app/domain/entities/history_entry.dart';
+import '/app/domain/entities/processed_result.dart';
 import '/app/routes/app_pages.dart';
 import '/l10n/app_localizations.dart';
 
@@ -78,31 +77,33 @@ class HomeView extends BaseView<HomeController> {
 class _HistoryTile extends StatelessWidget {
   const _HistoryTile({required this.item});
 
-  final HistoryItem item;
+  final HistoryEntry item;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (item.type == HistoryType.document) {
+        if (item.type == ContentType.document) {
           Get.toNamed(
             Routes.RESULT_DOCUMENT,
-            arguments: ProcessingResult(
+            arguments: ProcessedResult(
               originalPath: item.originalPath,
               processedImagePath: item.processedPath,
               contentType: ContentType.document,
               title: item.title,
               pdfPath: item.pdfPath,
+              extractedText: item.extractedText,
             ),
           );
         } else {
           Get.toNamed(
             Routes.RESULT_FACE,
-            arguments: ProcessingResult(
+            arguments: ProcessedResult(
               originalPath: item.originalPath,
               processedImagePath: item.processedPath,
               contentType: ContentType.face,
               title: item.title,
+              extractedText: item.extractedText,
             ),
           );
         }
@@ -168,7 +169,7 @@ class _HistoryTile extends StatelessWidget {
 class _HistoryThumbnail extends StatelessWidget {
   const _HistoryThumbnail({required this.item});
 
-  final HistoryItem item;
+  final HistoryEntry item;
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +192,7 @@ class _HistoryThumbnail extends StatelessWidget {
                 fit: BoxFit.cover,
               )
             : Icon(
-                item.type == HistoryType.face
+                item.type == ContentType.face
                     ? Icons.face
                     : Icons.picture_as_pdf,
                 color: AppColors.textSecondary,

@@ -7,8 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '/app/core/base/base_controller.dart';
-import '/app/data/models/history_item.dart';
 import '/app/data/models/content_type.dart';
+import '/app/domain/entities/history_entry.dart';
 import '/app/domain/usecases/history_use_case.dart';
 import '/app/domain/usecases/process_image_use_case.dart';
 import '/app/routes/app_pages.dart';
@@ -27,11 +27,11 @@ class HomeController extends BaseController {
   final HistoryUseCase _historyUseCase;
   final ProcessImageUseCase _processImageUseCase;
 
-  final RxList<HistoryItem> _items = <HistoryItem>[].obs;
+  final RxList<HistoryEntry> _items = <HistoryEntry>[].obs;
 
-  List<HistoryItem> get items => _items.toList(growable: false);
+  List<HistoryEntry> get items => _items.toList(growable: false);
 
-  StreamSubscription<List<HistoryItem>>? _subscription;
+  StreamSubscription<List<HistoryEntry>>? _subscription;
   final ImagePicker _picker = ImagePicker();
 
   @override

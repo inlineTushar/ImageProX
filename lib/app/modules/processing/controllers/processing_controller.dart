@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import '/app/core/base/base_controller.dart';
 import '/app/core/model/page_state.dart';
 import '/app/data/models/content_type.dart';
-import '/app/data/models/processing_result.dart';
+import '/app/domain/entities/processed_result.dart';
 import '/app/domain/usecases/process_image_use_case.dart';
 import '/l10n/app_localizations.dart';
 
@@ -16,7 +16,7 @@ class ProcessingController extends BaseController {
 
   final RxString _currentStep = 'Analyzing image...'.obs;
   final Rx<ContentType?> _contentType = Rx<ContentType?>(null);
-  final Rx<ProcessingResult?> _result = Rx<ProcessingResult?>(null);
+  final Rx<ProcessedResult?> _result = Rx<ProcessedResult?>(null);
   final ProcessImageUseCase _processImageUseCase;
 
   String? _imagePath;
@@ -26,7 +26,7 @@ class ProcessingController extends BaseController {
 
   String get currentStep => _currentStep.value;
   ContentType? get contentType => _contentType.value;
-  ProcessingResult? get result => _result.value;
+  ProcessedResult? get result => _result.value;
 
   void updateStep(String value) => _currentStep(value);
 

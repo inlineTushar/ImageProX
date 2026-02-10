@@ -2,14 +2,17 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import '/app/data/models/content_type.dart';
-import '/app/data/models/history_item.dart';
+import '/app/data/mappers/history_mapper.dart';
 import '/app/data/repository/history_repository.dart';
 import '/app/data/services/processing_workflow_service.dart';
+import '/app/data/mappers/processing_result_mapper.dart';
 import '/app/data/models/processing_result.dart';
 import '/app/data/services/storage_service.dart';
 import '/app/domain/services/image_processing_service.dart';
 import '/app/domain/services/pdf_service.dart';
 import '/app/domain/services/storage_service.dart';
+import '/app/domain/entities/processed_result.dart';
+import '/app/domain/entities/history_entry.dart';
 
 class ProcessImageUseCase {
   ProcessImageUseCase({
@@ -18,21 +21,27 @@ class ProcessImageUseCase {
     required PdfService pdfService,
     required StorageService storageService,
     required ProcessingWorkflowService workflowService,
+    HistoryMapper? historyMapper,
+    ProcessingResultMapper? resultMapper,
   })  : _repository = repository,
         _imageProcessingService = imageProcessingService,
         _pdfService = pdfService,
         _storageService = storageService,
-        _workflowService = workflowService;
+        _workflowService = workflowService,
+        _historyMapper = historyMapper ?? HistoryMapper(),
+        _resultMapper = resultMapper ?? ProcessingResultMapper();
 
   final HistoryRepository _repository;
   final ImageProcessingService _imageProcessingService;
   final PdfService _pdfService;
   final StorageService _storageService;
   final ProcessingWorkflowService _workflowService;
+  final HistoryMapper _historyMapper;
+  final ProcessingResultMapper _resultMapper;
 
   String _two(int value) => value.toString().padLeft(2, '0');
 
-  Future<ProcessingResult> run(
+  Future<ProcessedResult> run(
     String imagePath, {
     ContentType? forcedType,
     double? scanWidthFactor,
@@ -105,22 +114,22 @@ class ProcessImageUseCase {
     );
 
     await _repository.addHistoryItem(
-      HistoryItem(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        type: detection.contentType == ContentType.face
-            ? HistoryType.face
-            : HistoryType.document,
-        title: resultWithTitle.title,
-        createdAt: DateTime.now(),
-        originalPath: resultWithTitle.originalPath,
-        processedPath: resultWithTitle.processedImagePath,
-        thumbnailPath: resultWithTitle.processedImagePath,
-        pdfPath: resultWithTitle.pdfPath,
-        extractedText: resultWithTitle.extractedText,
+      _historyMapper.toData(
+        HistoryEntry(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          type: detection.contentType,
+          title: resultWithTitle.title,
+          createdAt: DateTime.now(),
+          originalPath: resultWithTitle.originalPath,
+          processedPath: resultWithTitle.processedImagePath,
+          thumbnailPath: resultWithTitle.processedImagePath,
+          pdfPath: resultWithTitle.pdfPath,
+          extractedText: resultWithTitle.extractedText,
+        ),
       ),
     );
 
-    return resultWithTitle;
+    return _resultMapper.toDomain(resultWithTitle);
   }
 
   Future<void> dispose() async {
